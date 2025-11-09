@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Question = require('../models/Question');
-const QuizSession = require('../models/QuizSession');
-const QuizBattle = require('../models/QuizBattle');
+const Question = require('../Models/Question');
+const QuizSession = require('../Models/QuizSession');
+const QuizBattle = require('../Models/QuizBattle');
 const { auth } = require('../Middlewares/authMiddleware');
 
 // Get question counts by category
@@ -161,7 +161,7 @@ router.post('/submit', auth, async (req, res) => {
 // Get leaderboard (sorted by battle wins)
 router.get('/leaderboard', auth, async (req, res) => {
   try {
-    const User = require('../models/User');
+    const User = require('../Models/User');
     const { limit = 50 } = req.query;
     
     const leaderboard = await User.getLeaderboard(parseInt(limit));
@@ -315,7 +315,7 @@ router.get('/battles/history', auth, async (req, res) => {
 // Helper function to update user stats
 const updateUserStats = async (userId, score, totalQuestions, timeSpent) => {
   try {
-    const User = require('../models/User');
+    const User = require('../Models/User');
     
     await User.findByIdAndUpdate(userId, {
       $inc: {

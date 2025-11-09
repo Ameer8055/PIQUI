@@ -3,9 +3,9 @@ const router = express.Router();
 // Remove these temporarily:
 // const { adminAuth } = require('../middleware/authMiddleware');
 const { auth } = require('../Middlewares/authMiddleware');
-const Question = require('../models/Question');
-const User = require('../models/User');
-const QuizSession = require('../models/QuizSession'); // You'll need to create this model
+const Question = require('../Models/Question');
+const User = require('../Models/User');
+const QuizSession = require('../Models/QuizSession'); // You'll need to create this model
 const SharedPDF = require('../Models/SharedPDF');
 const DeveloperMessage = require('../Models/DeveloperMessage');
 const ChatMessage = require('../Models/ChatMessage');

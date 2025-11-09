@@ -23,15 +23,53 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Health check endpoint (should work even if DB is not connected) - define early
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // MongoDB Connection with connection pooling for serverless
 let cachedDb = null;
+let isConnecting = false;
 
 async function connectToDatabase() {
-  if (cachedDb) {
+  if (cachedDb && mongoose.connection.readyState === 1) {
     return cachedDb;
   }
 
+  if (isConnecting) {
+    // Wait for existing connection attempt
+    return new Promise((resolve) => {
+      const checkConnection = setInterval(() => {
+        if (cachedDb && mongoose.connection.readyState === 1) {
+          clearInterval(checkConnection);
+          resolve(cachedDb);
+        }
+      }, 100);
+    });
+  }
+
+  isConnecting = true;
+
   try {
+    if (!process.env.mongoDB_url) {
+      throw new Error('MongoDB URL is not configured');
+    }
+
     const db = await mongoose.connect(process.env.mongoDB_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -41,45 +79,79 @@ async function connectToDatabase() {
     });
     
     cachedDb = db;
+    isConnecting = false;
     console.log('MongoDB connected');
     return db;
   } catch (error) {
+    isConnecting = false;
     console.error('MongoDB connection error:', error);
-    throw error;
+    // Don't throw - allow function to start even if DB connection fails
+    // The routes will handle DB errors individually
+    return null;
   }
 }
 
-// Connect to database
-connectToDatabase().catch(console.error);
+// Import routes with error handling
+let authRoutes, adminRoutes, quizRoutes, chatRoutes, sharedPDFRoutes, typedNoteRoutes, quizFromPDFRoutes, developerMessageRoutes;
 
-// Import routes
-const authRoutes = require('../Routes/AuthRoutes');
-const adminRoutes = require('../Routes/adminRoutes');
-const quizRoutes = require('../Routes/quizRoutes');
-const chatRoutes = require('../Routes/chatRoutes');
-const sharedPDFRoutes = require('../Routes/sharedPDFRoutes');
-const typedNoteRoutes = require('../Routes/typedNoteRoutes');
-const quizFromPDFRoutes = require('../Routes/quizFromPDFRoutes');
-const developerMessageRoutes = require('../Routes/developerMessageRoutes');
+try {
+  authRoutes = require('../Routes/AuthRoutes');
+  adminRoutes = require('../Routes/adminRoutes');
+  quizRoutes = require('../Routes/quizRoutes');
+  chatRoutes = require('../Routes/chatRoutes');
+  sharedPDFRoutes = require('../Routes/sharedPDFRoutes');
+  typedNoteRoutes = require('../Routes/typedNoteRoutes');
+  quizFromPDFRoutes = require('../Routes/quizFromPDFRoutes');
+  developerMessageRoutes = require('../Routes/developerMessageRoutes');
+} catch (error) {
+  console.error('Error loading routes:', error);
+  // Create a basic error route if routes fail to load
+  app.use('/api/*', (req, res) => {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Routes failed to load: ' + error.message 
+    });
+  });
+}
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/quiz', quizRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/shared-pdfs', sharedPDFRoutes);
-app.use('/api/typed-notes', typedNoteRoutes);
-app.use('/api/quiz-from-pdf', quizFromPDFRoutes);
-app.use('/api/developer-messages', developerMessageRoutes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Middleware to ensure DB connection before handling requests (except health check)
+app.use(async (req, res, next) => {
+  // Skip DB connection for health check
+  if (req.path === '/api/health') {
+    return next();
+  }
+  
+  // Try to connect to DB if not already connected
+  if (mongoose.connection.readyState !== 1) {
+    await connectToDatabase();
+  }
+  
+  next();
 });
+
+// API Routes (only if routes loaded successfully)
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (adminRoutes) app.use('/api/admin', adminRoutes);
+if (quizRoutes) app.use('/api/quiz', quizRoutes);
+if (chatRoutes) app.use('/api/chat', chatRoutes);
+if (sharedPDFRoutes) app.use('/api/shared-pdfs', sharedPDFRoutes);
+if (typedNoteRoutes) app.use('/api/typed-notes', typedNoteRoutes);
+if (quizFromPDFRoutes) app.use('/api/quiz-from-pdf', quizFromPDFRoutes);
+if (developerMessageRoutes) app.use('/api/developer-messages', developerMessageRoutes);
 
 // Serve static files (if needed)
 // Note: For production, use Cloudinary or similar for file storage
-app.use('/uploads', express.static(path.join(__dirname, '../Public', 'uploads')));
+// Only serve static files if Public folder exists
+try {
+  const fs = require('fs');
+  const publicPath = path.join(__dirname, '../Public', 'uploads');
+  if (fs.existsSync(publicPath)) {
+    app.use('/uploads', express.static(publicPath));
+  }
+} catch (error) {
+  // Public folder doesn't exist or can't be accessed - this is fine for serverless
+  console.log('Static file serving disabled (using Cloudinary for production)');
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
