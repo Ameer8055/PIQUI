@@ -1,6 +1,14 @@
 // Vercel Serverless Function Entry Point
 // This handles all API routes but NOT Socket.IO (which needs a separate deployment)
 
+// Load environment variables (Vercel injects these automatically, but dotenv helps for local dev)
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv might not be needed in production on Vercel
+  console.log('dotenv not available, using Vercel env vars');
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -22,25 +30,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Health check endpoint (should work even if DB is not connected) - define early
-app.get('/api/health', async (req, res) => {
-  try {
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      database: dbStatus,
-      environment: process.env.NODE_ENV || 'development'
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      status: 'error', 
-      message: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
 
 // MongoDB Connection with connection pooling for serverless
 let cachedDb = null;
@@ -91,28 +80,118 @@ async function connectToDatabase() {
   }
 }
 
-// Import routes with error handling
+// Import routes with error handling - load each route individually to catch specific errors
 let authRoutes, adminRoutes, quizRoutes, chatRoutes, sharedPDFRoutes, typedNoteRoutes, quizFromPDFRoutes, developerMessageRoutes;
+const routeErrors = [];
 
 try {
   authRoutes = require('../Routes/AuthRoutes');
-  adminRoutes = require('../Routes/adminRoutes');
-  quizRoutes = require('../Routes/quizRoutes');
-  chatRoutes = require('../Routes/chatRoutes');
-  sharedPDFRoutes = require('../Routes/sharedPDFRoutes');
-  typedNoteRoutes = require('../Routes/typedNoteRoutes');
-  quizFromPDFRoutes = require('../Routes/quizFromPDFRoutes');
-  developerMessageRoutes = require('../Routes/developerMessageRoutes');
+  console.log('✓ AuthRoutes loaded');
 } catch (error) {
-  console.error('Error loading routes:', error);
-  // Create a basic error route if routes fail to load
-  app.use('/api/*', (req, res) => {
+  console.error('✗ Error loading AuthRoutes:', error.message);
+  routeErrors.push('AuthRoutes: ' + error.message);
+}
+
+try {
+  adminRoutes = require('../Routes/adminRoutes');
+  console.log('✓ adminRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading adminRoutes:', error.message);
+  routeErrors.push('adminRoutes: ' + error.message);
+}
+
+try {
+  quizRoutes = require('../Routes/quizRoutes');
+  console.log('✓ quizRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading quizRoutes:', error.message);
+  routeErrors.push('quizRoutes: ' + error.message);
+}
+
+try {
+  chatRoutes = require('../Routes/chatRoutes');
+  console.log('✓ chatRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading chatRoutes:', error.message);
+  routeErrors.push('chatRoutes: ' + error.message);
+}
+
+try {
+  sharedPDFRoutes = require('../Routes/sharedPDFRoutes');
+  console.log('✓ sharedPDFRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading sharedPDFRoutes:', error.message);
+  routeErrors.push('sharedPDFRoutes: ' + error.message);
+}
+
+try {
+  typedNoteRoutes = require('../Routes/typedNoteRoutes');
+  console.log('✓ typedNoteRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading typedNoteRoutes:', error.message);
+  routeErrors.push('typedNoteRoutes: ' + error.message);
+}
+
+try {
+  quizFromPDFRoutes = require('../Routes/quizFromPDFRoutes');
+  console.log('✓ quizFromPDFRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading quizFromPDFRoutes:', error.message);
+  routeErrors.push('quizFromPDFRoutes: ' + error.message);
+}
+
+try {
+  developerMessageRoutes = require('../Routes/developerMessageRoutes');
+  console.log('✓ developerMessageRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading developerMessageRoutes:', error.message);
+  routeErrors.push('developerMessageRoutes: ' + error.message);
+}
+
+// If any routes failed to load, add an error endpoint
+if (routeErrors.length > 0) {
+  app.get('/api/route-errors', (req, res) => {
     res.status(500).json({ 
       status: 'error', 
-      message: 'Routes failed to load: ' + error.message 
+      message: 'Some routes failed to load',
+      errors: routeErrors
     });
   });
 }
+
+// Health check endpoint (should work even if DB is not connected)
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const mongoUrl = process.env.mongoDB_url ? 'configured' : 'not configured';
+    
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      mongoUrl: mongoUrl,
+      environment: process.env.NODE_ENV || 'development',
+      routesLoaded: {
+        auth: !!authRoutes,
+        admin: !!adminRoutes,
+        quiz: !!quizRoutes,
+        chat: !!chatRoutes,
+        sharedPDF: !!sharedPDFRoutes,
+        typedNote: !!typedNoteRoutes,
+        quizFromPDF: !!quizFromPDFRoutes,
+        developerMessage: !!developerMessageRoutes
+      },
+      routeErrors: routeErrors.length > 0 ? routeErrors : null
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Middleware to ensure DB connection before handling requests (except health check)
 app.use(async (req, res, next) => {
