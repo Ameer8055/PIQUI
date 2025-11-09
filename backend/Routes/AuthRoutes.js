@@ -7,6 +7,10 @@ const { auth } = require('../Middlewares/authMiddleware');
 
 // Register route
 router.post('/register', async (req, res) => {
+  console.log('[Register] ========================================');
+  console.log('[Register] Route handler called');
+  console.log('[Register] Request body keys:', Object.keys(req.body || {}));
+  
   try {
     console.log('[Register] Registration attempt started');
     const { name, email, password, phone, pscStream } = req.body;
@@ -105,6 +109,10 @@ router.post('/register', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
+  console.log('[Login] ========================================');
+  console.log('[Login] Route handler called');
+  console.log('[Login] Request body keys:', Object.keys(req.body || {}));
+  
   try {
     console.log('[Login] Login attempt started');
     const { email, password } = req.body;

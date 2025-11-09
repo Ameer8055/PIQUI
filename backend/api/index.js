@@ -204,13 +204,19 @@ if (routeErrors.length > 0) {
 // Health check endpoint (should work even if DB is not connected)
 app.get('/api/health', async (req, res) => {
   try {
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = states[dbState] || 'unknown';
     const mongoUrl = process.env.mongoDB_url ? 'configured' : 'not configured';
+    
+    console.log('[Health Check] Request received');
+    console.log('[Health Check] DB State:', dbStatus, `(${dbState})`);
     
     res.json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
       database: dbStatus,
+      dbStateCode: dbState,
       mongoUrl: mongoUrl,
       environment: process.env.NODE_ENV || 'development',
       routesLoaded: {
@@ -226,6 +232,7 @@ app.get('/api/health', async (req, res) => {
       routeErrors: routeErrors.length > 0 ? routeErrors : null
     });
   } catch (error) {
+    console.error('[Health Check] Error:', error.message);
     res.status(500).json({ 
       status: 'error', 
       message: error.message,
@@ -237,7 +244,7 @@ app.get('/api/health', async (req, res) => {
 
 // Middleware to ensure DB connection before handling requests (except health check)
 app.use(async (req, res, next) => {
-  // Skip DB connection for health check
+  // Skip DB connection for health check and route errors
   if (req.path === '/api/health' || req.path === '/api/route-errors') {
     return next();
   }
@@ -245,35 +252,39 @@ app.use(async (req, res, next) => {
   // Log connection status before attempting connection
   const currentState = mongoose.connection.readyState;
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-  console.log(`[DB Middleware] Request to ${req.path} - Current DB state: ${states[currentState] || 'unknown'}`);
+  console.log(`[DB Middleware] ========================================`);
+  console.log(`[DB Middleware] Request received: ${req.method} ${req.path}`);
+  console.log(`[DB Middleware] Current DB state: ${states[currentState] || 'unknown'} (${currentState})`);
   
   // Try to connect to DB if not already connected
   if (mongoose.connection.readyState !== 1) {
-    console.log(`[DB Middleware] DB not connected, attempting connection for ${req.path}...`);
-    const db = await connectToDatabase();
-    
-    // Check final state after connection attempt
-    const finalState = mongoose.connection.readyState;
-    console.log(`[DB Middleware] After connection attempt - DB state: ${states[finalState] || 'unknown'}`);
-    
-    // If connection failed, return error
-    if (!db && mongoose.connection.readyState !== 1) {
-      console.error(`[DB Middleware] ✗ Database connection failed for request: ${req.path}`);
-      return res.status(503).json({
-        status: 'error',
-        message: 'Database connection failed. Please check your MongoDB configuration.',
-        path: req.path,
-        dbState: states[finalState] || 'unknown'
-      });
-    }
-    
-    if (mongoose.connection.readyState === 1) {
-      console.log(`[DB Middleware] ✓ Database connected successfully for ${req.path}`);
+    console.log(`[DB Middleware] DB not connected, attempting connection...`);
+    try {
+      const db = await connectToDatabase();
+      
+      // Check final state after connection attempt
+      const finalState = mongoose.connection.readyState;
+      console.log(`[DB Middleware] After connection attempt - DB state: ${states[finalState] || 'unknown'} (${finalState})`);
+      
+      // If connection failed, log but don't block - let routes handle it
+      if (!db && mongoose.connection.readyState !== 1) {
+        console.error(`[DB Middleware] ⚠️  Database connection failed, but allowing request to proceed`);
+        console.error(`[DB Middleware] Routes will handle DB errors individually`);
+        // Don't block - let the route handlers deal with DB errors
+        // This allows us to see what error the route handler gets
+      } else if (mongoose.connection.readyState === 1) {
+        console.log(`[DB Middleware] ✓ Database connected successfully`);
+      }
+    } catch (error) {
+      console.error(`[DB Middleware] Connection attempt threw error:`, error.message);
+      // Don't block - let routes handle it
     }
   } else {
-    console.log(`[DB Middleware] ✓ DB already connected for ${req.path}`);
+    console.log(`[DB Middleware] ✓ DB already connected`);
   }
   
+  console.log(`[DB Middleware] Proceeding to route handler...`);
+  console.log(`[DB Middleware] ========================================`);
   next();
 });
 
