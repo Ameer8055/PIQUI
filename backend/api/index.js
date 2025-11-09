@@ -36,11 +36,20 @@ let cachedDb = null;
 let isConnecting = false;
 
 async function connectToDatabase() {
+  console.log('[connectToDatabase] Function called');
+  console.log('[connectToDatabase] Current state:', {
+    hasCachedDb: !!cachedDb,
+    readyState: mongoose.connection.readyState,
+    isConnecting: isConnecting
+  });
+  
   if (cachedDb && mongoose.connection.readyState === 1) {
+    console.log('[connectToDatabase] Using cached connection');
     return cachedDb;
   }
 
   if (isConnecting) {
+    console.log('[connectToDatabase] Connection already in progress, waiting...');
     // Wait for existing connection attempt (with timeout)
     return new Promise((resolve, reject) => {
       let attempts = 0;
@@ -49,9 +58,11 @@ async function connectToDatabase() {
         attempts++;
         if (cachedDb && mongoose.connection.readyState === 1) {
           clearInterval(checkConnection);
+          console.log('[connectToDatabase] Waited for connection, now connected');
           resolve(cachedDb);
         } else if (attempts >= maxAttempts) {
           clearInterval(checkConnection);
+          console.error('[connectToDatabase] Connection wait timeout');
           reject(new Error('Connection timeout'));
         }
       }, 100);
@@ -59,13 +70,23 @@ async function connectToDatabase() {
   }
 
   isConnecting = true;
+  console.log('[connectToDatabase] Starting new connection attempt...');
+  
+  const startTime = Date.now();
 
   try {
     if (!process.env.mongoDB_url) {
       throw new Error('MongoDB URL is not configured. Please set mongoDB_url environment variable.');
     }
 
-    console.log('Attempting to connect to MongoDB...');
+    console.log('[connectToDatabase] MongoDB URL configured:', {
+      hasUrl: true,
+      urlLength: process.env.mongoDB_url.length,
+      urlPrefix: process.env.mongoDB_url.substring(0, 20) + '...' // Show first 20 chars only for security
+    });
+    
+    console.log('[connectToDatabase] Attempting to connect to MongoDB...');
+    
     const db = await mongoose.connect(process.env.mongoDB_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -74,18 +95,27 @@ async function connectToDatabase() {
       socketTimeoutMS: 45000,
     });
     
+    const connectionTime = Date.now() - startTime;
     cachedDb = db;
     isConnecting = false;
-    console.log('✓ MongoDB connected successfully');
+    console.log(`[connectToDatabase] ✓ MongoDB connected successfully in ${connectionTime}ms`);
+    console.log('[connectToDatabase] Connection details:', {
+      host: mongoose.connection.host,
+      port: mongoose.connection.port,
+      name: mongoose.connection.name,
+      readyState: mongoose.connection.readyState
+    });
     return db;
   } catch (error) {
     isConnecting = false;
-    console.error('✗ MongoDB connection error:', error.message);
-    console.error('Connection details:', {
+    const connectionTime = Date.now() - startTime;
+    console.error(`[connectToDatabase] ✗ MongoDB connection error after ${connectionTime}ms:`, error.message);
+    console.error('[connectToDatabase] Error details:', {
+      errorName: error.name,
+      errorCode: error.code,
       hasUrl: !!process.env.mongoDB_url,
       urlLength: process.env.mongoDB_url?.length || 0,
-      errorName: error.name,
-      errorCode: error.code
+      stack: error.stack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack
     });
     // Return null to indicate failure, but don't throw
     return null;
@@ -212,19 +242,36 @@ app.use(async (req, res, next) => {
     return next();
   }
   
+  // Log connection status before attempting connection
+  const currentState = mongoose.connection.readyState;
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  console.log(`[DB Middleware] Request to ${req.path} - Current DB state: ${states[currentState] || 'unknown'}`);
+  
   // Try to connect to DB if not already connected
   if (mongoose.connection.readyState !== 1) {
+    console.log(`[DB Middleware] DB not connected, attempting connection for ${req.path}...`);
     const db = await connectToDatabase();
+    
+    // Check final state after connection attempt
+    const finalState = mongoose.connection.readyState;
+    console.log(`[DB Middleware] After connection attempt - DB state: ${states[finalState] || 'unknown'}`);
     
     // If connection failed, return error
     if (!db && mongoose.connection.readyState !== 1) {
-      console.error('Database connection failed for request:', req.path);
+      console.error(`[DB Middleware] ✗ Database connection failed for request: ${req.path}`);
       return res.status(503).json({
         status: 'error',
         message: 'Database connection failed. Please check your MongoDB configuration.',
-        path: req.path
+        path: req.path,
+        dbState: states[finalState] || 'unknown'
       });
     }
+    
+    if (mongoose.connection.readyState === 1) {
+      console.log(`[DB Middleware] ✓ Database connected successfully for ${req.path}`);
+    }
+  } else {
+    console.log(`[DB Middleware] ✓ DB already connected for ${req.path}`);
   }
   
   next();

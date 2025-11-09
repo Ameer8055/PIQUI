@@ -117,7 +117,7 @@ const quizBattleSchema = new mongoose.Schema(
   }
 );
 
-quizBattleSchema.index({ battleId: 1 }, { unique: true });
+// Note: battleId index is automatically created by unique: true, so we don't need to define it again
 quizBattleSchema.index({ subject: 1, startedAt: -1 });
 quizBattleSchema.index({ 'players.user': 1, startedAt: -1 });
 

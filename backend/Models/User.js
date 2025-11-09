@@ -369,7 +369,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
-userSchema.index({ email: 1 });
+// Note: email index is automatically created by unique: true, so we don't need to define it again
 userSchema.index({ role: 1 });
 userSchema.index({ 'battleStats.totalBattlePoints': -1 });
 userSchema.index({ 'battleStats.battlesWon': -1 });
