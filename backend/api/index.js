@@ -41,12 +41,18 @@ async function connectToDatabase() {
   }
 
   if (isConnecting) {
-    // Wait for existing connection attempt
-    return new Promise((resolve) => {
+    // Wait for existing connection attempt (with timeout)
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
       const checkConnection = setInterval(() => {
+        attempts++;
         if (cachedDb && mongoose.connection.readyState === 1) {
           clearInterval(checkConnection);
           resolve(cachedDb);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkConnection);
+          reject(new Error('Connection timeout'));
         }
       }, 100);
     });
@@ -56,26 +62,32 @@ async function connectToDatabase() {
 
   try {
     if (!process.env.mongoDB_url) {
-      throw new Error('MongoDB URL is not configured');
+      throw new Error('MongoDB URL is not configured. Please set mongoDB_url environment variable.');
     }
 
+    console.log('Attempting to connect to MongoDB...');
     const db = await mongoose.connect(process.env.mongoDB_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000, // Increased to 10 seconds
       socketTimeoutMS: 45000,
     });
     
     cachedDb = db;
     isConnecting = false;
-    console.log('MongoDB connected');
+    console.log('✓ MongoDB connected successfully');
     return db;
   } catch (error) {
     isConnecting = false;
-    console.error('MongoDB connection error:', error);
-    // Don't throw - allow function to start even if DB connection fails
-    // The routes will handle DB errors individually
+    console.error('✗ MongoDB connection error:', error.message);
+    console.error('Connection details:', {
+      hasUrl: !!process.env.mongoDB_url,
+      urlLength: process.env.mongoDB_url?.length || 0,
+      errorName: error.name,
+      errorCode: error.code
+    });
+    // Return null to indicate failure, but don't throw
     return null;
   }
 }
@@ -196,13 +208,23 @@ app.get('/api/health', async (req, res) => {
 // Middleware to ensure DB connection before handling requests (except health check)
 app.use(async (req, res, next) => {
   // Skip DB connection for health check
-  if (req.path === '/api/health') {
+  if (req.path === '/api/health' || req.path === '/api/route-errors') {
     return next();
   }
   
   // Try to connect to DB if not already connected
   if (mongoose.connection.readyState !== 1) {
-    await connectToDatabase();
+    const db = await connectToDatabase();
+    
+    // If connection failed, return error
+    if (!db && mongoose.connection.readyState !== 1) {
+      console.error('Database connection failed for request:', req.path);
+      return res.status(503).json({
+        status: 'error',
+        message: 'Database connection failed. Please check your MongoDB configuration.',
+        path: req.path
+      });
+    }
   }
   
   next();
