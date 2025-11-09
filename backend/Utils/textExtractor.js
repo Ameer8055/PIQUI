@@ -1,6 +1,7 @@
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
-const Tesseract = require('tesseract.js');
+// Lazy load Tesseract to avoid DOMMatrix errors in serverless environments
+let Tesseract = null;
 
 /**
  * Extract text from PDF file
@@ -33,6 +34,16 @@ async function extractTextFromDOCX(buffer) {
  */
 async function extractTextFromImage(buffer, mimeType) {
   try {
+    // Lazy load Tesseract only when needed
+    if (!Tesseract) {
+      try {
+        Tesseract = require('tesseract.js');
+      } catch (error) {
+        console.error('Error loading Tesseract.js:', error.message);
+        throw new Error('OCR functionality is not available in this environment. Tesseract.js requires browser APIs that are not available in serverless environments.');
+      }
+    }
+    
     // Convert buffer to image format that Tesseract can process
     const imageBuffer = Buffer.from(buffer);
     
