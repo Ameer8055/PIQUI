@@ -1,0 +1,263 @@
+.admin-navbar {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  padding: 0 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.admin-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 70px;
+}
+
+.admin-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.admin-nav-brand .brand-icon {
+  font-size: 1.5rem;
+}
+
+.admin-nav-links {
+  display: flex;
+  gap: 5px;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.admin-nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.admin-nav-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 600;
+}
+
+.admin-user-profile {
+  position: relative;
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: white;
+}
+
+.admin-user-info:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.admin-user-name {
+  font-weight: 500;
+}
+
+.admin-dropdown-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.admin-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
+  padding: 8px 0;
+  margin-top: 8px;
+  z-index: 1001;
+}
+
+.admin-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+  color: #333;
+  text-align: left;
+}
+
+.admin-dropdown-item:hover {
+  background: #f8f9fa;
+}
+
+.admin-user-info-item {
+  cursor: default;
+  padding: 16px;
+}
+
+.admin-user-info-item:hover {
+  background: none;
+}
+
+.admin-user-avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.admin-user-details {
+  flex: 1;
+}
+
+.admin-user-name-full {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.admin-user-email {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.admin-user-role {
+  font-size: 0.7rem;
+  color: #667eea;
+  font-weight: 600;
+  background: #f0f4ff;
+  padding: 2px 6px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.admin-dropdown-icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.admin-dropdown-divider {
+  height: 1px;
+  background: #e9ecef;
+  margin: 8px 0;
+}
+
+.logout-button {
+  color: #dc3545;
+}
+
+.logout-button:hover {
+  background: #fff5f5;
+  color: #dc3545;
+}
+
+/* Notification Badge */
+.notification-badge {
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 4px;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.admin-nav-link {
+  position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-nav-container {
+    padding: 0 10px;
+  }
+  
+  .admin-nav-links {
+    gap: 2px;
+  }
+  
+  .admin-nav-link {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .nav-label {
+    display: none;
+  }
+  
+  .admin-user-name {
+    display: none;
+  }
+  
+  .admin-dropdown-menu {
+    min-width: 200px;
+    right: -10px;
+  }
+}

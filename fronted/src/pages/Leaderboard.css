@@ -1,0 +1,506 @@
+.leaderboard-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+}
+
+.leaderboard-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 3rem;
+}
+
+.leaderboard-header h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.leaderboard-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+}
+
+.spinner {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  background: #FEE2E2;
+  color: #DC2626;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Current User Card */
+.current-user-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  border: 3px solid #667eea;
+}
+
+.user-rank-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 15px;
+  min-width: 100px;
+}
+
+.rank-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rank-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.user-details h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.user-stats {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.user-xp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.xp-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  line-height: 1;
+}
+
+.xp-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Podium Section */
+.podium-section {
+  margin-bottom: 2rem;
+}
+
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.podium-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 15px;
+  transition: transform 0.3s ease;
+}
+
+.podium-item:hover {
+  transform: translateY(-5px);
+}
+
+.podium-item.first {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  order: 2;
+  min-height: 250px;
+}
+
+.podium-item.second {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+  order: 1;
+  min-height: 200px;
+}
+
+.podium-item.third {
+  background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+  order: 3;
+  min-height: 180px;
+}
+
+.podium-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  border: 3px solid white;
+}
+
+.podium-rank {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.podium-name {
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.podium-xp {
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Leaderboard List */
+.leaderboard-list {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-list h2 {
+  color: #1f2937;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.leaderboard-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px 200px 120px;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.leaderboard-row:hover {
+  background: #f0f4ff;
+  border-color: #667eea;
+  transform: translateX(5px);
+}
+
+.leaderboard-row.current-user {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.leaderboard-row.rank-first {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+}
+
+.leaderboard-row.rank-second {
+  background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%);
+}
+
+.leaderboard-row.rank-third {
+  background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 100%);
+}
+
+.rank-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-icon {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.user-column {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-avatar-small {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.user-info-small {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-name {
+  color: #000000 !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.you-badge {
+  background: #667eea;
+  color: rgb(255, 255, 255);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.level-column {
+  display: flex;
+  align-items: center;
+}
+
+.level-badge {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.stats-column {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat-small {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label-small {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.stat-value-small {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.xp-column {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.xp-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.xp-value-large {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  line-height: 1;
+}
+
+.xp-label-small {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.start-quiz-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.start-quiz-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .leaderboard-page {
+    padding: 1rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .current-user-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .podium {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .podium-item {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .podium-item.first {
+    order: 1;
+  }
+
+  .podium-item.second {
+    order: 2;
+  }
+
+  .podium-item.third {
+    order: 3;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 50px 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .level-column,
+  .stats-column,
+  .xp-column {
+    grid-column: 2;
+  }
+
+  .stats-column {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+

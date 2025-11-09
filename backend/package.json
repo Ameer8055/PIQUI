@@ -1,0 +1,34 @@
+{
+  "name": "psc-quizzer-backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "socket": "node socket-server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.8.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.11.0",
+    "mongoose": "^8.19.2",
+    "morgan": "^1.10.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^7.0.10",
+    "pdf-parse": "^2.4.5",
+    "socket.io": "^4.8.1",
+    "tesseract.js": "^6.0.1"
+  }
+}

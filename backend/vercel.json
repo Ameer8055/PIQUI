@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/cron/chat-cleanup.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/cron/chat-cleanup",
+      "dest": "api/cron/chat-cleanup.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/chat-cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
