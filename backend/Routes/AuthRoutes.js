@@ -8,17 +8,30 @@ const { auth } = require('../Middlewares/authMiddleware');
 // Register route
 router.post('/register', async (req, res) => {
   try {
+    console.log('[Register] Registration attempt started');
     const { name, email, password, phone, pscStream } = req.body;
 
+    // Validate input
+    if (!name || !email || !password) {
+      console.log('[Register] Missing required fields:', { hasName: !!name, hasEmail: !!email, hasPassword: !!password });
+      return res.status(400).json({
+        status: 'error',
+        message: 'Name, email, and password are required'
+      });
+    }
+
+    console.log('[Register] Checking if user exists:', email);
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('[Register] User already exists');
       return res.status(400).json({
         status: 'error',
         message: 'User already exists with this email'
       });
     }
 
+    console.log('[Register] Creating new user');
     // Create user with plain password - pre-save middleware will hash it
     const user = new User({
       name,
@@ -28,14 +41,23 @@ router.post('/register', async (req, res) => {
       pscStream: pscStream || ''
     });
 
+    console.log('[Register] Saving user to database...');
     await user.save();
+    console.log('[Register] User saved successfully, ID:', user._id);
 
     // Generate token
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    if (!process.env.JWT_SECRET) {
+      console.warn('[Register] WARNING: Using default JWT_SECRET. Set JWT_SECRET environment variable for production!');
+    }
+    
+    console.log('[Register] Generating JWT token...');
     const token = jwt.sign(
       { userId: user._id }, 
-      process.env.JWT_SECRET || 'your-secret-key',
+      jwtSecret,
       { expiresIn: '7d' }
     );
+    console.log('[Register] Token generated successfully');
 
     res.status(201).json({
       status: 'success',
@@ -49,12 +71,34 @@ router.post('/register', async (req, res) => {
         pscStream: user.pscStream
       }
     });
+    console.log('[Register] Registration successful');
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('[Register] Registration error:', error.message);
+    console.error('[Register] Error stack:', error.stack);
+    console.error('[Register] Error name:', error.name);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        status: 'error',
+        message: 'Validation error',
+        errors: messages
+      });
+    }
+    
+    // Handle duplicate key error (email already exists)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'User already exists with this email'
+      });
+    }
+
     res.status(500).json({
       status: 'error',
-      message: 'Server error during registration'
+      message: error.message || 'Server error during registration'
     });
   }
 });
@@ -62,19 +106,37 @@ router.post('/register', async (req, res) => {
 // Login route
 router.post('/login', async (req, res) => {
   try {
+    console.log('[Login] Login attempt started');
     const { email, password } = req.body;
 
-    // Check if user exists
-    const user = await User.findOne({ email }).select('+password');
+    // Validate input
+    if (!email || !password) {
+      console.log('[Login] Missing credentials:', { hasEmail: !!email, hasPassword: !!password });
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email and password are required'
+      });
+    }
+
+    console.log('[Login] Looking for user with email:', email);
+    // Check if user exists - explicitly select password field
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    
     if (!user) {
+      console.log('[Login] User not found');
       return res.status(400).json({
         status: 'error',
         message: 'Invalid email or password'
       });
     }
 
+    console.log('[Login] User found, ID:', user._id);
+    console.log('[Login] User active status:', user.isActive);
+    console.log('[Login] User has password field:', !!user.password);
+
     // Check if user account is active
     if (user.isActive === false) {
+      console.log('[Login] Account is inactive');
       return res.status(403).json({
         status: 'error',
         message: 'Your account has been temporarily suspended. Please contact admin.'
@@ -82,8 +144,20 @@ router.post('/login', async (req, res) => {
     }
 
     // Check password
+    if (!user.password) {
+      console.error('[Login] ERROR: User password field is missing!');
+      return res.status(500).json({
+        status: 'error',
+        message: 'Server error: Password field not found'
+      });
+    }
+
+    console.log('[Login] Comparing password...');
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('[Login] Password match result:', isMatch);
+    
     if (!isMatch) {
+      console.log('[Login] Password mismatch');
       return res.status(400).json({
         status: 'error',
         message: 'Invalid email or password'
@@ -91,15 +165,23 @@ router.post('/login', async (req, res) => {
     }
 
     // Update last login
+    console.log('[Login] Updating last login...');
     user.lastLogin = new Date();
     await user.save();
 
     // Generate token
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    if (!process.env.JWT_SECRET) {
+      console.warn('[Login] WARNING: Using default JWT_SECRET. Set JWT_SECRET environment variable for production!');
+    }
+    
+    console.log('[Login] Generating JWT token...');
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      jwtSecret,
       { expiresIn: '7d' }
     );
+    console.log('[Login] Token generated successfully');
 
     res.json({
       status: 'success',
@@ -115,12 +197,16 @@ router.post('/login', async (req, res) => {
         isActive: user.isActive
       }
     });
+    console.log('[Login] Login successful');
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[Login] Login error:', error.message);
+    console.error('[Login] Error stack:', error.stack);
+    console.error('[Login] Error name:', error.name);
+    
     res.status(500).json({
       status: 'error',
-      message: 'Server error during login'
+      message: error.message || 'Server error during login'
     });
   }
 });
