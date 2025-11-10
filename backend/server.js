@@ -24,6 +24,19 @@ mongoose
     console.error('MongoDB connection error:', error);
   });
 
+// Health check
+app.get('/api/health', (req, res) => {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const dbState = mongoose.connection.readyState;
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: states[dbState] || 'unknown',
+    dbStateCode: dbState,
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 const authRoutes = require('./Routes/AuthRoutes');
 const adminRoutes = require('./Routes/adminRoutes');
 const quizRoutes = require('./Routes/quizRoutes');

@@ -17,11 +17,53 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: process.env.CLIENT_ORIGIN?.split(',') || '*',
-  credentials: true
-}));
+// CORS Configuration - Handle preflight requests properly
+const allowedOrigins = process.env.CLIENT_ORIGIN 
+  ? process.env.CLIENT_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:5173', 'http://localhost:3000', '*']; // Default to allow localhost for development
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins if '*' is in the list (for development)
+    if (allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    
+    // Check if origin is allowed
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400 // 24 hours
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+// Middleware to fix double slashes and normalize paths
+app.use((req, res, next) => {
+  // Fix double slashes in path
+  if (req.path.includes('//')) {
+    const normalizedPath = req.path.replace(/\/+/g, '/');
+    console.log(`[Path Normalizer] Fixed path: ${req.path} -> ${normalizedPath}`);
+    req.url = req.url.replace(req.path, normalizedPath);
+    req.path = normalizedPath;
+  }
+  next();
+});
 
 // Only log in development
 if (process.env.NODE_ENV !== 'production') {

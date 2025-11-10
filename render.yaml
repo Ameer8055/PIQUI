@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: psc-quizzer-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+    healthCheckPath: /api/health
+
