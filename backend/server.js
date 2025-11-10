@@ -12,6 +12,39 @@ app.use(cors({
   origin: process.env.CLIENT_ORIGIN?.split(',') || '*',
   credentials: true
 }));
+// Add this after your CORS middleware but before your routes
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.originalUrl}`);
+  console.log(`📍 Headers:`, req.headers);
+  next();
+});
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Add route listing for debugging
+app.get('/api/debug/routes', (req, res) => {
+  const routes = [
+    'GET /api/health',
+    'GET /api/debug/routes',
+    'POST /api/auth/login',
+    'POST /api/auth/register',
+    'GET /api/admin/*',
+    'GET /api/quiz/*',
+    'GET /api/chat/*',
+    'GET /api/shared-pdfs/*',
+    'GET /api/typed-notes/*',
+    'GET /api/quiz-from-pdf/*',
+    'GET /api/developer-messages/*'
+  ];
+  res.json({ availableRoutes: routes });
+});
 app.use(morgan('dev'));
 app.use(express.json());
 
