@@ -79,7 +79,7 @@ const SignInPage = ({ onLogin }) => {
         setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
       } else {
         // Server error
-        setError('Login failed. Please try again later.');
+        setError(err.response?.data?.message);
       }
       console.error('Login error:', err.response?.data);
     } finally {
