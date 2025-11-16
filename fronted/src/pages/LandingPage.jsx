@@ -21,14 +21,13 @@ const LandingPage = ({ onRegister }) => {
       <section className="hero-section">
         <div className="hero-container">
           <div className="hero-content">
-            <div className="hero-badge">Premium PSC Preparation Platform</div>
+            <div className="hero-badge">Your Ultimate Quiz Destination</div>
             <h1 className="hero-title">
-              Master Your PSC Exams with
-              <span className="highlight"> Confidence</span>
+              Welcome to <span className="highlight">PIQUI</span>
             </h1>
             <p className="hero-subtitle">
-              Join thousands of successful aspirants who have transformed their PSC preparation 
-              with our comprehensive quiz platform, live competitions, and intelligent study tools.
+              Discover fun quizzes, time-pass challenges, competitive exam preparation, and PSC tests all in one place. 
+              Join thousands of quiz enthusiasts who learn, compete, and grow with our comprehensive quiz platform.
             </p>
             
             <div className="hero-actions">
@@ -68,8 +67,8 @@ const LandingPage = ({ onRegister }) => {
       <section className="features-section">
         <div className="features-container">
           <div className="section-header">
-            <h2 className="section-title">Everything You Need to Succeed</h2>
-            <p className="section-subtitle">Comprehensive tools designed for PSC exam excellence</p>
+            <h2 className="section-title">Everything You Need for Every Quiz</h2>
+            <p className="section-subtitle">From fun time-pass quizzes to serious competitive exam preparation</p>
           </div>
 
           <div className="features-grid">
@@ -79,10 +78,10 @@ const LandingPage = ({ onRegister }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="feature-title">Daily Subject Quizzes</h3>
+              <h3 className="feature-title">Fun & Time Pass Quizzes</h3>
               <p className="feature-description">
-                Practice with thousands of curated questions across all PSC subjects, 
-                designed to strengthen your knowledge systematically.
+                Enjoy engaging quizzes on movies, sports, general knowledge, and entertainment. 
+                Perfect for relaxing while learning something new.
               </p>
             </div>
 
@@ -92,10 +91,10 @@ const LandingPage = ({ onRegister }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="feature-title">Live Quiz Competitions</h3>
+              <h3 className="feature-title">Competitive Exam Quizzes</h3>
               <p className="feature-description">
-                Compete in real-time with fellow aspirants, test your speed and accuracy, 
-                and climb the leaderboard while learning.
+                Prepare for PSC, UPSC, SSC, and other competitive exams with thousands of 
+                curated questions designed to boost your exam readiness.
               </p>
             </div>
 
@@ -118,10 +117,23 @@ const LandingPage = ({ onRegister }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                 </svg>
               </div>
+              <h3 className="feature-title">Live Quiz Battles</h3>
+              <p className="feature-description">
+                Compete in real-time with fellow quiz enthusiasts. Test your speed and accuracy, 
+                climb the leaderboard, and challenge yourself every day.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-wrapper">
+                <svg className="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
               <h3 className="feature-title">Community Chat</h3>
               <p className="feature-description">
-                Connect with a vibrant community of PSC aspirants. Share insights, 
-                discuss strategies, and learn together on your journey to success.
+                Connect with a vibrant community of quiz enthusiasts. Share insights, 
+                discuss strategies, ask questions, and learn together.
               </p>
             </div>
           </div>
@@ -131,8 +143,8 @@ const LandingPage = ({ onRegister }) => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="cta-container">
-          <h2 className="cta-title">Ready to Transform Your PSC Preparation?</h2>
-          <p className="cta-subtitle">Join thousands of successful aspirants today</p>
+          <h2 className="cta-title">Ready to Start Your Quiz Journey?</h2>
+          <p className="cta-subtitle">Join thousands of quiz enthusiasts today</p>
           <button 
             className="cta-button-large"
             onClick={() => setShowModal(true)}

@@ -320,7 +320,7 @@ const QuizBattle = ({ user }) => {
     <div className="live-quiz-page">
       <div className="quiz-battle-header">
         <h1>⚡ Quiz Battle</h1>
-        <p>Challenge other PSC aspirants in real-time quiz competitions</p>
+        <p>Challenge other quiz enthusiasts in real-time quiz competitions</p>
       </div>
 
       {error && (

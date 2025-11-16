@@ -73,8 +73,8 @@ const RegistrationModal = ({ onClose, onRegister }) => {
         </button>
 
         <div className="modal-header">
-          <h2>Welcome to PSC Quiz Master! 🎓</h2>
-          <p>Join our community of PSC aspirants</p>
+          <h2>Welcome to PIQUI! 🎯</h2>
+          <p>Join our community of quiz enthusiasts</p>
         </div>
 
         {error && (
@@ -141,7 +141,7 @@ const RegistrationModal = ({ onClose, onRegister }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="pscStream">PSC Stream (Optional)</label>
+            <label htmlFor="pscStream">Exam Stream (Optional)</label>
             <select
               id="pscStream"
               name="pscStream"

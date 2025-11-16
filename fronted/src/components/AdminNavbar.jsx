@@ -72,7 +72,7 @@ const AdminNavbar = ({ user }) => {
         {/* Logo/Brand */}
         <div className="admin-nav-brand" onClick={() => navigate('/admin')}>
           <span className="brand-icon">⚙️</span>
-          <span className="brand-text">PSC Quiz Admin</span>
+          <span className="brand-text">PIQUI Admin</span>
         </div>
 
         {/* Admin Navigation Links */}

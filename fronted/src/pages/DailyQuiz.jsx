@@ -591,7 +591,7 @@ const DailyQuiz = ({ user }) => {
       {/* Header */}
       <div className="quiz-page-header">
         <h1>📚 Daily Quiz</h1>
-        <p>Practice with subject-wise quizzes and improve your PSC preparation</p>
+        <p>Practice with subject-wise quizzes across fun, time-pass, and competitive exam categories</p>
       </div>
 
       {/* Subjects Grid */}

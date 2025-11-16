@@ -115,8 +115,8 @@ const Navbar = ({ user }) => {
         <div className="nav-container">
           {/* Logo/Brand */}
           <div className="nav-brand" onClick={() => navigate('/dashboard')}>
-            <span className="brand-icon">🎓</span>
-            <span className="brand-text">PSC Quiz Master</span>
+            <span className="brand-icon">🎯</span>
+            <span className="brand-text">PIQUI</span>
           </div>
 
           {/* Navigation Links */}

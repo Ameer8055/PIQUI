@@ -105,7 +105,7 @@ const AdminUsers = ({ user }) => {
       {
         _id: '5',
         name: 'Admin User',
-        email: 'admin@pscquiz.com',
+        email: 'admin@piqui.com',
         role: 'admin',
         isActive: true,
         pscStream: 'other',

@@ -95,7 +95,7 @@ const Leaderboard = ({ user }) => {
     <div className="leaderboard-page">
       <div className="leaderboard-header">
         <h1>🏆 Leaderboard</h1>
-        <p>See where you rank among all PSC aspirants</p>
+        <p>See where you rank among all quiz enthusiasts</p>
       </div>
 
       {error && (

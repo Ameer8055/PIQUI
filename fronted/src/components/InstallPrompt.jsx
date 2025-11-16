@@ -33,7 +33,7 @@ export const InstallPrompt = () => {
   return (
     <div className="install-prompt">
       <div className="prompt-content">
-        <h3>📱 Install PSC Quiz App</h3>
+        <h3>📱 Install PIQUI App</h3>
         <p>Get the best experience with our app!</p>
         <div className="prompt-actions">
           <button onClick={installApp} className="install-btn">

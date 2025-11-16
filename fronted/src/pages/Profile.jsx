@@ -289,7 +289,7 @@ const Profile = ({ user }) => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>PSC Stream</label>
+                    <label>Exam Stream</label>
                     <select
                       value={editForm.pscStream}
                       onChange={(e) => handleInputChange('pscStream', e.target.value)}

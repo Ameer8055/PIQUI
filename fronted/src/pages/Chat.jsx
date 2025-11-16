@@ -489,7 +489,7 @@ const Chat = ({ user }) => {
           {/* Chat Header */}
           <div className="chat-header">
             <div className="chat-info">
-              <h2>PSC Study Community</h2>
+              <h2>Quiz Community</h2>
               <span className="member-count">
                 {onlineUsers.length} members online
               </span>

@@ -96,7 +96,7 @@ const SignInPage = ({ onLogin }) => {
       <div className="signin-card">
         <div className="signin-header">
           <h1>Welcome Back! 👋</h1>
-          <p>Sign in to continue your PSC preparation journey</p>
+          <p>Sign in to continue your quiz journey</p>
         </div>
 
         {/* Display error message with different styles for different errors */}
@@ -105,7 +105,7 @@ const SignInPage = ({ onLogin }) => {
             {error}
             {(error.includes('suspended') || error.includes('blocked')) && (
               <div className="contact-admin">
-                <p>Need help? Contact administrator at <strong>admin@pscquiz.com</strong></p>
+                <p>Need help? Contact administrator at <strong>admin@piqui.com</strong></p>
               </div>
             )}
           </div>

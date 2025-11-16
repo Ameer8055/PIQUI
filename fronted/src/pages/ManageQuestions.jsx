@@ -680,7 +680,7 @@ const ManageQuestions = ({ user }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, tags: e.target.value })
                 }
-                placeholder="psc, kerala, general-knowledge"
+                placeholder="general-knowledge, fun-quiz, competitive-exam, psc"
               />
             </div>
 

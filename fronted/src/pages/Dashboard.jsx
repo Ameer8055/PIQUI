@@ -95,7 +95,7 @@ const Dashboard = ({ user }) => {
     {
       id: 5,
       title: "💬 Community Chat",
-      description: "Discuss with fellow PSC aspirants and clear doubts",
+      description: "Connect with fellow quiz enthusiasts and discuss everything",
       route: "/chat",
       color: "#fa709a",
       stats: "Active community"
@@ -111,7 +111,7 @@ const Dashboard = ({ user }) => {
     {
       id: 7,
       title: "🏆 Leaderboard",
-      description: "Check your rank among all PSC aspirants",
+      description: "Check your rank among all quiz enthusiasts",
       route: "/leaderboard",
       color: "#fed6e3",
       stats: "Live rankings"
@@ -144,7 +144,7 @@ const Dashboard = ({ user }) => {
       <header className="dashboard-header">
         <div className="welcome-section">
           <h1>Welcome back, {user?.name}! 👋</h1>
-          <p>Ready to continue your PSC preparation journey?</p>
+          <p>Ready to continue your quiz journey?</p>
         </div>
         <div className="user-stats">
           {quickStats.map((stat, index) => (
@@ -208,7 +208,7 @@ const Dashboard = ({ user }) => {
           <div className="activity-item">
             <div className="activity-icon">🎉</div>
             <div className="activity-content">
-              <p>Welcome to PSC Quiz Master!</p>
+              <p>Welcome to PIQUI!</p>
               <span>Just now</span>
             </div>
           </div>
