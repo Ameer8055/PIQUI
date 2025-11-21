@@ -1,7 +1,7 @@
 /* Professional Landing Page Design */
 .landing-page {
   min-height: 100vh;
-  background: #0f172a;
+  background: #000000;
   color: #ffffff;
   overflow-x: hidden;
   width: 100%;
@@ -146,7 +146,7 @@
 
 /* Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #757F9A 0%, #D7DDE8 50%, #757F9A ) !important;
   position: relative;
   padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2rem);
   overflow: hidden;
@@ -159,8 +159,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 50%, rgba(32, 32, 31, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(251, 251, 251, 0.08) 0%, transparent 50%);
   pointer-events: none;
   animation: pulse 4s ease-in-out infinite;
 }
@@ -172,7 +172,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 13, 13, 0.05) 0%, transparent 70%);
   animation: float 6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -217,7 +217,7 @@
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: #030303;
   letter-spacing: -0.02em;
 }
 
@@ -236,7 +236,7 @@
 .hero-subtitle {
   font-size: clamp(1rem, 3vw, 1.25rem);
   line-height: 1.7;
-  color: #cbd5e1;
+  color: #1c5aa6;
   margin-bottom: 2.5rem;
   max-width: 700px;
   margin-left: auto;
@@ -297,7 +297,7 @@
 
 .cta-secondary {
   background: transparent;
-  color: #ffffff;
+  color: #3a3838;
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: clamp(0.875rem, 2.5vw, 1.125rem) clamp(2rem, 5vw, 2.75rem);
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
@@ -348,7 +348,7 @@
 .stat-value {
   font-size: clamp(1.75rem, 5vw, 2.5rem);
   font-weight: 800;
-  color: #fbbf24;
+  color: #fbbf24 !important;
   margin-bottom: 0.5rem;
   line-height: 1;
   transition: transform 0.3s ease;
@@ -356,7 +356,7 @@
 
 .hero-stat:hover .stat-value {
   transform: scale(1.1);
-  color: #f59e0b;
+  color: #f59e0b !important;
 }
 
 .stat-text {

@@ -9,8 +9,10 @@ const Navbar = ({ user }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const dropdownRef = useRef(null)
+  const mobileMenuRef = useRef(null)
   const [unreadRepliesCount, setUnreadRepliesCount] = useState(0)
 
   const navItems = [
@@ -27,13 +29,36 @@ const Navbar = ({ user }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false)
       }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) && 
+          !event.target.closest('.mobile-menu-toggle')) {
+        setIsMobileMenuOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
     }
   }, [])
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location.pathname])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
 
   // Fetch unread replies count
   useEffect(() => {
@@ -100,9 +125,14 @@ const Navbar = ({ user }) => {
     setIsDropdownOpen(!isDropdownOpen)
   }
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+    setIsDropdownOpen(false)
+  }
+
   const handleNavigation = (item) => {
-    // Navigate to all pages normally
     navigate(item.path)
+    setIsMobileMenuOpen(false)
   }
 
   const closeToast = () => {
@@ -119,8 +149,8 @@ const Navbar = ({ user }) => {
             <span className="brand-text">PIQUI</span>
           </div>
 
-          {/* Navigation Links */}
-          <div className="nav-links">
+          {/* Desktop Navigation Links */}
+          <div className="nav-links desktop-nav">
             {navItems.map(item => (
               <button
                 key={item.path}
@@ -136,55 +166,143 @@ const Navbar = ({ user }) => {
             ))}
           </div>
 
-          {/* User Profile with Dropdown */}
-          <div className="user-profile" ref={dropdownRef}>
-            <div className="user-info" onClick={toggleDropdown}>
-              <div className="user-avatar">
-                {user?.name?.charAt(0).toUpperCase()}
+          {/* Right Side: User Profile + Mobile Menu Toggle */}
+          <div className="nav-right">
+            {/* User Profile with Dropdown (Desktop) */}
+            <div className="user-profile desktop-profile" ref={dropdownRef}>
+              <div className="user-info" onClick={toggleDropdown}>
+                <div className="user-avatar">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
               </div>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-item user-info-item">
+                    <div className="user-avatar-small">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="user-details">
+                      <div className="user-name-full">{user?.name}</div>
+                      <div className="user-email">{user?.email}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      navigate('/profile')
+                      setIsDropdownOpen(false)
+                    }}
+                  >
+                    <span className="dropdown-icon">👤</span>
+                    My Profile
+                  </button>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <button 
+                    className="dropdown-item logout-button"
+                    onClick={handleLogout}
+                  >
+                    <span className="dropdown-icon">🚪</span>
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="dropdown-menu">
-                <div className="dropdown-item user-info-item">
-                  <div className="user-avatar-small">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="user-details">
-                    <div className="user-name-full">{user?.name}</div>
-                    <div className="user-email">{user?.email}</div>
-                  </div>
-                </div>
-                
-                <div className="dropdown-divider"></div>
-                
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    navigate('/profile')
-                    setIsDropdownOpen(false)
-                  }}
-                >
-                  <span className="dropdown-icon">👤</span>
-                  My Profile
-                </button>
-                
-                <div className="dropdown-divider"></div>
-                
-                <button 
-                  className="dropdown-item logout-button"
-                  onClick={handleLogout}
-                >
-                  <span className="dropdown-icon">🚪</span>
-                  Logout
-                </button>
-              </div>
-            )}
+            {/* Mobile Menu Toggle Button */}
+            <button 
+              className="mobile-menu-toggle"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </button>
           </div>
         </div>
+
       </nav>
 
+      {/* Mobile Menu Overlay - Outside nav for proper z-index */}
+      {isMobileMenuOpen && (
+        <div 
+          className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
+
+      {/* Mobile Menu - Outside nav for proper z-index */}
+      <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} ref={mobileMenuRef}>
+        <div className="mobile-menu-content">
+          {/* User Info in Mobile Menu */}
+          <div className="mobile-user-info">
+            <div className="mobile-user-avatar">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="mobile-user-details">
+              <div className="mobile-user-name">{user?.name}</div>
+              <div className="mobile-user-email">{user?.email}</div>
+            </div>
+          </div>
+
+          <div className="mobile-nav-divider"></div>
+
+          {/* Mobile Navigation Links */}
+          <div className="mobile-nav-links">
+            {navItems.map(item => (
+              <button
+                key={item.path}
+                className={`mobile-nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                onClick={() => handleNavigation(item)}
+              >
+                <span className="mobile-nav-icon">{item.icon}</span>
+                <span className="mobile-nav-label">{item.label}</span>
+                {item.path === '/chat' && unreadRepliesCount > 0 && (
+                  <span className="mobile-notification-badge">{unreadRepliesCount}</span>
+                )}
+                {location.pathname === item.path && (
+                  <span className="mobile-active-indicator">✓</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className="mobile-nav-divider"></div>
+
+          {/* Mobile Menu Actions */}
+          <div className="mobile-menu-actions">
+            <button 
+              className="mobile-menu-item"
+              onClick={() => {
+                navigate('/profile')
+                setIsMobileMenuOpen(false)
+              }}
+            >
+              <span className="mobile-menu-icon">👤</span>
+              My Profile
+            </button>
+            
+            <button 
+              className="mobile-menu-item logout-button"
+              onClick={handleLogout}
+            >
+              <span className="mobile-menu-icon">🚪</span>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
