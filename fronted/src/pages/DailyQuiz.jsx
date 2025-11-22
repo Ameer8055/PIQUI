@@ -29,9 +29,10 @@ const DailyQuiz = ({ user }) => {
   const [loadingCounts, setLoadingCounts] = useState(true)
   const [isAIGeneratedQuiz, setIsAIGeneratedQuiz] = useState(false)
   const [aiQuizId, setAiQuizId] = useState(null)
+  const [activeTab, setActiveTab] = useState('competitive') // 'competitive' or 'fun'
 
-  // Quiz subjects data
-  const subjects = [
+  // Competitive Exam Subjects
+  const competitiveSubjects = [
     {
       id: 1,
       name: '📚 General Knowledge',
@@ -106,19 +107,109 @@ const DailyQuiz = ({ user }) => {
     }
   ]
 
-  // Map subject ID to backend category
-  const getCategoryFromSubject = (subjectId) => {
-    const categoryMap = {
-      1: 'general-knowledge',
-      2: 'mathematics',
-      3: 'english',
-      4: 'malayalam',
-      5: 'constitution',
-      6: 'reasoning',
-      7: 'computer',
-      8: 'current-affairs'
+  // Fun Quiz Subjects
+  const funSubjects = [
+    {
+      id: 101,
+      name: '🎬 Movies & TV Shows',
+      description: 'Bollywood, Hollywood, and popular TV series trivia',
+      icon: '🎭',
+      color: '#F59E0B',
+      totalQuestions: 450,
+      dailyQuestions: 10
+    },
+    {
+      id: 102,
+      name: '🎵 Music & Artists',
+      description: 'Popular songs, artists, and music trivia',
+      icon: '🎵',
+      color: '#EC4899',
+      totalQuestions: 380,
+      dailyQuestions: 8
+    },
+    {
+      id: 103,
+      name: '🎮 Video Games',
+      description: 'Popular games, characters, and gaming culture',
+      icon: '🕹️',
+      color: '#10B981',
+      totalQuestions: 320,
+      dailyQuestions: 6
+    },
+    {
+      id: 104,
+      name: '⚽ Sports',
+      description: 'Cricket, football, and major sporting events',
+      icon: '🏆',
+      color: '#3B82F6',
+      totalQuestions: 420,
+      dailyQuestions: 8
+    },
+    {
+      id: 105,
+      name: '🍕 Food & Cuisine',
+      description: 'World cuisines, cooking techniques, and food trivia',
+      icon: '🍔',
+      color: '#EF4444',
+      totalQuestions: 280,
+      dailyQuestions: 6
+    },
+    {
+      id: 106,
+      name: '🌍 Travel & Places',
+      description: 'Famous landmarks, cultures, and travel destinations',
+      icon: '✈️',
+      color: '#06B6D4',
+      totalQuestions: 350,
+      dailyQuestions: 7
+    },
+    {
+      id: 107,
+      name: '📚 Books & Literature',
+      description: 'Famous books, authors, and literary characters',
+      icon: '📖',
+      color: '#8B5CF6',
+      totalQuestions: 290,
+      dailyQuestions: 6
+    },
+    {
+      id: 108,
+      name: '🔍 Pop Culture',
+      description: 'Internet memes, viral trends, and celebrity gossip',
+      icon: '🌟',
+      color: '#84CC16',
+      totalQuestions: 400,
+      dailyQuestions: 8
     }
-    return categoryMap[subjectId] || 'general-knowledge'
+  ]
+
+  // Map subject ID to backend category
+  const getCategoryFromSubject = (subjectId, isFunQuiz = false) => {
+    if (isFunQuiz) {
+      const funCategoryMap = {
+        101: 'movies-tv',
+        102: 'music',
+        103: 'video-games',
+        104: 'sports',
+        105: 'food',
+        106: 'travel',
+        107: 'books',
+        108: 'pop-culture'
+      }
+      return funCategoryMap[subjectId] || 'general'
+    } else {
+      const competitiveCategoryMap = {
+        1: 'general-knowledge',
+        2: 'mathematics',
+        3: 'english',
+        4: 'malayalam',
+        5: 'constitution',
+        6: 'reasoning',
+        7: 'computer',
+        8: 'current-affairs'
+      }
+      return competitiveCategoryMap[subjectId] || 'general-knowledge'
+    }
   }
 
   // Get API base URL
@@ -215,8 +306,8 @@ const DailyQuiz = ({ user }) => {
     return () => clearInterval(timer)
   }, [quizStarted, timeLeft])
 
-  const handleSubjectSelect = (subject) => {
-    setSelectedSubject(subject)
+  const handleSubjectSelect = (subject, isFunQuiz = false) => {
+    setSelectedSubject({ ...subject, isFunQuiz })
     setShowSettings(true)
     setError(null) // Clear any previous errors
   }
@@ -250,7 +341,7 @@ const DailyQuiz = ({ user }) => {
         return
       }
 
-      const category = getCategoryFromSubject(selectedSubject.id)
+      const category = getCategoryFromSubject(selectedSubject.id, selectedSubject.isFunQuiz)
       const difficulty = quizSettings.difficulty
       
       const response = await axios.get(`${API_BASE_URL}/quiz/daily`, {
@@ -358,14 +449,15 @@ const DailyQuiz = ({ user }) => {
       } else {
         // Regular quiz submission
         const category = selectedSubject && selectedSubject.id 
-          ? getCategoryFromSubject(selectedSubject.id) 
+          ? getCategoryFromSubject(selectedSubject.id, selectedSubject.isFunQuiz) 
           : 'mixed'
         
         const response = await axios.post(`${API_BASE_URL}/quiz/submit`, {
           questions: userAnswers,
           timeSpent: timeSpent,
           category: category,
-          difficulty: quizSettings.difficulty
+          difficulty: quizSettings.difficulty,
+          quizType: selectedSubject?.isFunQuiz ? 'fun' : 'competitive'
         }, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -455,6 +547,7 @@ const DailyQuiz = ({ user }) => {
             </div>
             <div className="result-details">
               <p>Subject: <strong>{selectedSubject?.name}</strong></p>
+              <p>Type: <strong>{selectedSubject?.isFunQuiz ? 'Fun Quiz' : 'Competitive Exam'}</strong></p>
               <p>Accuracy: <strong>{accuracy}%</strong></p>
               {quizResults?.timeSpent && (
                 <p>Time Taken: <strong>{Math.round(quizResults.timeSpent / 60)} min {quizResults.timeSpent % 60} sec</strong></p>
@@ -591,13 +684,29 @@ const DailyQuiz = ({ user }) => {
       {/* Header */}
       <div className="quiz-page-header">
         <h1>📚 Daily Quiz</h1>
-        <p>Practice with subject-wise quizzes across fun, time-pass, and competitive exam categories</p>
+        <p>Choose between competitive exam preparation or fun quizzes to test your knowledge</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="quiz-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'competitive' ? 'active' : ''}`}
+          onClick={() => setActiveTab('competitive')}
+        >
+          🎯 Competitive Exams
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'fun' ? 'active' : ''}`}
+          onClick={() => setActiveTab('fun')}
+        >
+          🎉 Fun Quizzes
+        </button>
       </div>
 
       {/* Subjects Grid */}
       <div className="subjects-grid">
-        {subjects.map(subject => {
-          const category = getCategoryFromSubject(subject.id)
+        {(activeTab === 'competitive' ? competitiveSubjects : funSubjects).map(subject => {
+          const category = getCategoryFromSubject(subject.id, activeTab === 'fun')
           const totalQuestions = loadingCounts 
             ? '...' 
             : (questionCounts[category] !== undefined ? questionCounts[category] : subject.totalQuestions)
@@ -607,7 +716,7 @@ const DailyQuiz = ({ user }) => {
               key={subject.id}
               className="subject-card"
               style={{ '--subject-color': subject.color }}
-              onClick={() => handleSubjectSelect(subject)}
+              onClick={() => handleSubjectSelect(subject, activeTab === 'fun')}
             >
               <div className="subject-header">
                 <div className="subject-icon">
@@ -711,6 +820,10 @@ const DailyQuiz = ({ user }) => {
                   <div className="summary-item">
                     <span>Difficulty:</span>
                     <span>{quizSettings.difficulty}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span>Quiz Type:</span>
+                    <span>{selectedSubject.isFunQuiz ? 'Fun Quiz' : 'Competitive Exam'}</span>
                   </div>
                 </div>
               </div>

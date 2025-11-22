@@ -524,7 +524,55 @@
   background: #d1d5db;
   transform: translateY(-2px);
 }
+/* Add these styles to your existing DailyQuiz.css */
 
+/* Tab Navigation */
+.quiz-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.tab-button.active {
+  background: white;
+  color: #667eea;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design for Tabs */
+@media (max-width: 768px) {
+  .quiz-tabs {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .tab-button {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+  }
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .daily-quiz-page {
