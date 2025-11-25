@@ -11,8 +11,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}']
       },
       manifest: {
-        name: 'PSC Quiz Master',
-        short_name: 'PSCQuiz',
+        name: 'PIQUI',
+        short_name: 'PIQUI',
         description: 'Daily PSC quizzes and live competitions',
         theme_color: '#2563eb',
         background_color: '#ffffff',
