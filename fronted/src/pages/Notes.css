@@ -1,7 +1,12 @@
 .notes-page {
   min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
+  margin: 0;
+  width: 100%;
+  position: relative;
+  overflow-y: auto;
 }
 
 .notes-header {
@@ -352,7 +357,11 @@
 
 .notebook-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+}
+
+.notebook-header + .options-toggle-btn {
+  display: none;
 }
 
 .notebook-header h3 {
@@ -426,6 +435,12 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+@media (min-width: 769px) {
+  .tools-panel {
+    display: flex !important;
+  }
 }
 
 .tool-group label {
@@ -837,6 +852,33 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mobile-share-btn {
+  display: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.mobile-share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
 }
 
 .filter-select {
@@ -1042,14 +1084,75 @@
   font-style: italic;
 }
 
+/* Options Toggle Button */
+.options-toggle-btn {
+  display: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0 auto 1rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  width: auto;
+  min-width: 150px;
+  position: relative;
+  z-index: 10;
+  visibility: visible;
+  opacity: 1;
+}
+
+.options-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .notes-page {
     padding: 1rem;
+    height: auto;
+    min-height: 100vh;
   }
 
-  .section-content {
+  .contribute-section {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .desktop-upload-card {
+    display: none;
+  }
+
+  .community-notes {
+    order: 1;
+    width: 100%;
+    padding: 1rem;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mobile-share-btn {
+    display: block;
+  }
+
+  .section-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-select {
+    flex: 1;
   }
 
   .notebook-container {
@@ -1058,6 +1161,11 @@
 
   .tools-panel {
     order: 2;
+    display: none;
+  }
+
+  .tools-panel.show {
+    display: flex;
   }
 
   .save-form {
@@ -1090,6 +1198,38 @@
   .note-item-actions button {
     flex: 1;
     min-width: 100px;
+  }
+
+  .notes-tabs {
+    flex-direction: row;
+    align-items:center;
+    gap: 0.5rem;
+  }
+
+  .tab-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Options Toggle Button - Mobile */
+  .notebook-header + .options-toggle-btn,
+  .options-toggle-btn {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    max-width: 200px;
+    margin: 1rem auto 1.5rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .notebook-header p {
+    display: none;
+  }
+
+  .notebook-section {
+    padding: 1.5rem 1rem;
   }
 }
 
@@ -1576,6 +1716,45 @@
   z-index: 2000;
 }
 
+/* PDF Upload Modal - Mobile */
+.pdf-upload-modal-overlay {
+  z-index: 2000;
+}
+
+.pdf-upload-modal {
+  max-width: 95vw;
+  width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-upload-modal .modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pdf-upload-modal .modal-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.3rem;
+}
+
+.pdf-upload-modal .modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
 .modal-content {
   background: white;
   border-radius: 12px;
@@ -1701,6 +1880,25 @@
   display: block; /* Remove the grid layout */
   max-width: 900px; /* Medium size */
   margin: 0 auto; /* Center the notebook */
+}
+
+.options-toggle-btn {
+  display: none;
+  background: #667eea;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.options-toggle-btn:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
 }
 
 /* Delete Confirmation Modal Styles */

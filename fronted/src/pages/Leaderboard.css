@@ -1,7 +1,12 @@
 .leaderboard-page {
   min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
+  margin: 0;
+  width: 100%;
+  position: relative;
+  overflow-y: auto;
 }
 
 .leaderboard-header {

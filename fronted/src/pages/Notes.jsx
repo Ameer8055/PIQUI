@@ -23,6 +23,7 @@ const Notes = ({ user }) => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [originalPdfUrl, setOriginalPdfUrl] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Typed Note states
   const [typedNotes, setTypedNotes] = useState([]);
@@ -47,6 +48,10 @@ const Notes = ({ user }) => {
   const [currentQuiz, setCurrentQuiz] = useState(null);
   const [generatingQuizFromNote, setGeneratingQuizFromNote] = useState(null);
   const [hasGeneratedQuizToday, setHasGeneratedQuizToday] = useState(false);
+  const [showNotebookOptions, setShowNotebookOptions] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth > 768;
+  });
 
   const subjects = [
     "General Knowledge",
@@ -151,6 +156,7 @@ const Notes = ({ user }) => {
       setPdfUploadSubject("");
       setPdfUploadDescription("");
       setPdfFile(null);
+      setShowUploadModal(false); // Close modal after successful upload
       fetchSharedPDFs();
     } catch (error) {
       console.error("Error uploading PDF:", error);
@@ -522,26 +528,27 @@ const Notes = ({ user }) => {
           className={`tab-btn ${activeSection === "pdf-sharing" ? "active" : ""}`}
           onClick={() => setActiveSection("pdf-sharing")}
         >
-          📚 PDF Sharing
+          Resources
         </button>
         <button
           className={`tab-btn ${activeSection === "notebook" ? "active" : ""}`}
           onClick={() => setActiveSection("notebook")}
         >
-          ✍️ Digital Notebook
+           Notebook
         </button>
         <button
           className={`tab-btn ${activeSection === "quiz-maker" ? "active" : ""}`}
           onClick={() => setActiveSection("quiz-maker")}
         >
-          🤖 AI Quiz Maker
+          Quiz Maker
         </button>
       </div>
 
       {/* PDF Sharing Section */}
       {activeSection === "pdf-sharing" && (
-        <div className="section-content">
-          <div className="upload-card">
+        <div className="section-content contribute-section">
+          {/* Upload Card - Hidden on mobile, shown on desktop */}
+          <div className="upload-card desktop-upload-card">
             <h3>Share Your PDF Notes</h3>
             <p>Upload PDF files (max 20MB) to share with the community</p>
 
@@ -614,18 +621,26 @@ const Notes = ({ user }) => {
           <div className="community-notes">
             <div className="section-header-actions">
               <h3>Community PDFs ({sharedPDFs.length})</h3>
-              <select
-                value={pdfFilter}
-                onChange={(e) => setPdfFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Subjects</option>
-                {subjects.map((sub) => (
-                  <option key={sub} value={sub}>
-                    {sub}
-                  </option>
-                ))}
-              </select>
+              <div className="header-actions-right">
+                <button 
+                  className="mobile-share-btn"
+                  onClick={() => setShowUploadModal(true)}
+                >
+                  📤 Share PDF
+                </button>
+                <select
+                  value={pdfFilter}
+                  onChange={(e) => setPdfFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="all">All Subjects</option>
+                  {subjects.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="notes-grid">
               {sharedPDFs.map((pdf) => (
@@ -678,6 +693,84 @@ const Notes = ({ user }) => {
         </div>
       )}
 
+      {/* PDF Upload Modal - Mobile Only */}
+      {showUploadModal && (
+        <div className="modal-overlay pdf-upload-modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="modal-content pdf-upload-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Share Your PDF Notes</h2>
+              <button className="modal-close" onClick={() => setShowUploadModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="upload-form">
+                <div className="form-group">
+                  <label>Title *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Indian Constitution Summary"
+                    value={pdfUploadTitle}
+                    onChange={(e) => setPdfUploadTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Subject *</label>
+                  <select
+                    value={pdfUploadSubject}
+                    onChange={(e) => setPdfUploadSubject(e.target.value)}
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Brief description of the PDF content..."
+                    value={pdfUploadDescription}
+                    onChange={(e) => setPdfUploadDescription(e.target.value)}
+                    rows="3"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Upload PDF *</label>
+                  <div className="file-upload-area">
+                    <input
+                      type="file"
+                      id="pdf-upload-mobile"
+                      accept=".pdf"
+                      onChange={(e) => setPdfFile(e.target.files[0])}
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="pdf-upload-mobile" className="file-upload-label">
+                      <div className="upload-icon">📁</div>
+                      <div className="upload-text">
+                        <strong>{pdfFile ? pdfFile.name : "Click to upload PDF"}</strong>
+                        <span>Max file size: 20MB</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <button
+                  className="upload-btn"
+                  onClick={handlePDFUpload}
+                  disabled={isUploadingPDF || !pdfFile || !pdfUploadTitle || !pdfUploadSubject}
+                >
+                  {isUploadingPDF ? "Uploading..." : "Share PDF"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PDF Preview Modal */}
       {showPreviewModal && previewPdfUrl && (
         <div className="modal-overlay pdf-preview-overlay" onClick={closePreviewModal}>
@@ -714,14 +807,22 @@ const Notes = ({ user }) => {
       {/* Digital Notebook Section */}
       {activeSection === "notebook" && (
         <div className="section-content">
-        <div className="notebook-section">
-          <div className="notebook-header">
-            <h3>✍️ Digital Notebook</h3>
+          <div className="notebook-section">
+            <div className="notebook-header">
+              <h3>✍️ Digital Notebook</h3>
               <p>Type your notes - they will be saved for 30 days</p>
-          </div>
+            </div>
 
-          <div className="notebook-container">
-            <div className="tools-panel">
+            <button
+              type="button"
+              className="options-toggle-btn"
+              onClick={() => setShowNotebookOptions((prev) => !prev)}
+            >
+              {showNotebookOptions ? "Hide Options" : "⚙️ Options"}
+            </button>
+
+            <div className="notebook-container">
+              <div className={`tools-panel ${showNotebookOptions ? 'show' : ''}`}>
                   <div className="tool-group">
                     <label>Text Color</label>
                     <div className="color-picker">
@@ -794,9 +895,9 @@ const Notes = ({ user }) => {
                       🗑️ Clear Text
                     </button>
                   </div>
-            </div>
+                </div>
 
-            <div className="content-area">
+              <div className="content-area">
                 <div className="text-container">
                   <div
                     className={`lined-paper paper-${paperStyle}`}

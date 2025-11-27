@@ -1,9 +1,12 @@
 .dashboard {
   padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  margin: 0;
+  width: 100%;
   background: #f8fafc;
   min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
 }
 
 /* Dashboard Header */
