@@ -297,7 +297,7 @@
 
 .cta-secondary {
   background: transparent;
-  color: #3a3838;
+  color: #000000;
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: clamp(0.875rem, 2.5vw, 1.125rem) clamp(2rem, 5vw, 2.75rem);
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
@@ -326,7 +326,7 @@
 }
 
 .cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(14, 14, 14, 0.1);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-3px);
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
@@ -361,7 +361,7 @@
 
 .stat-text {
   font-size: clamp(0.85rem, 2.5vw, 1rem);
-  color: #94a3b8;
+  color: #000000;
   font-weight: 500;
 }
 

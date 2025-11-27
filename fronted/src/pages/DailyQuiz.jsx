@@ -264,6 +264,22 @@ const DailyQuiz = ({ user }) => {
     }
   }, [location.state, navigate, location.pathname])
 
+  // Check if user wants to start timed quiz from QuizBrowser
+  useEffect(() => {
+    if (location.state && location.state.startTimedQuiz) {
+      const subject = location.state.subject
+      const category = location.state.category
+      const isFunQuiz = location.state.isFunQuiz || false
+      
+      if (subject && category) {
+        setSelectedSubject({ ...subject, isFunQuiz })
+        setShowSettings(true)
+        // Clear the state
+        navigate(location.pathname, { replace: true, state: null })
+      }
+    }
+  }, [location.state, navigate, location.pathname])
+
   // Fetch question counts from database
   useEffect(() => {
     const fetchQuestionCounts = async () => {
@@ -307,9 +323,15 @@ const DailyQuiz = ({ user }) => {
   }, [quizStarted, timeLeft])
 
   const handleSubjectSelect = (subject, isFunQuiz = false) => {
-    setSelectedSubject({ ...subject, isFunQuiz })
-    setShowSettings(true)
-    setError(null) // Clear any previous errors
+    // Navigate to QuizBrowser page instead of showing settings modal
+    const category = getCategoryFromSubject(subject.id, isFunQuiz)
+    navigate('/quiz-browser', {
+      state: {
+        subject: subject,
+        category: category,
+        isFunQuiz: isFunQuiz
+      }
+    })
   }
 
   const handleSettingsChange = (key, value) => {
@@ -730,7 +752,7 @@ const DailyQuiz = ({ user }) => {
               <div className="subject-stats">
                 <div className="stat">
                   <span className="stat-value">{totalQuestions}</span>
-                  <span className="stat-label">Total Qs</span>
+                  <span className="stat-label">Total</span>
                 </div>
                 <div className="stat">
                   <span className="stat-value">{subject.dailyQuestions}</span>

@@ -20,6 +20,7 @@ const Notes = ({ user }) => {
   const [pdfFile, setPdfFile] = useState(null);
   const [isUploadingPDF, setIsUploadingPDF] = useState(false);
   const [pdfFilter, setPdfFilter] = useState("all");
+  const [pdfSearchQuery, setPdfSearchQuery] = useState("");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [originalPdfUrl, setOriginalPdfUrl] = useState(null);
@@ -642,8 +643,27 @@ const Notes = ({ user }) => {
                 </select>
               </div>
             </div>
+            <div className="pdf-search-container">
+              <input
+                type="text"
+                placeholder="🔍 Search PDFs by name..."
+                value={pdfSearchQuery}
+                onChange={(e) => setPdfSearchQuery(e.target.value)}
+                className="pdf-search-input"
+              />
+            </div>
             <div className="notes-grid">
-              {sharedPDFs.map((pdf) => (
+              {sharedPDFs
+                .filter((pdf) => {
+                  if (!pdfSearchQuery.trim()) return true;
+                  const searchLower = pdfSearchQuery.toLowerCase();
+                  return (
+                    pdf.title.toLowerCase().includes(searchLower) ||
+                    (pdf.description && pdf.description.toLowerCase().includes(searchLower)) ||
+                    pdf.uploaderName.toLowerCase().includes(searchLower)
+                  );
+                })
+                .map((pdf) => (
                 <div key={pdf._id} className="note-card">
                   <div className="note-header">
                     <div className="note-type-icon">📄</div>

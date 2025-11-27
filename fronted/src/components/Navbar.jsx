@@ -145,8 +145,7 @@ const Navbar = ({ user }) => {
         <div className="nav-container">
           {/* Logo/Brand */}
           <div className="nav-brand" onClick={() => navigate('/dashboard')}>
-            <span className="brand-icon">🎯</span>
-            <span className="brand-text">PIQUI</span>
+            <span className="brand-icon"><img src="/viite.png" alt="brandicon" /></span>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -222,7 +221,7 @@ const Navbar = ({ user }) => {
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
             >
-              <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
+              <span className={`dots-menu ${isMobileMenuOpen ? 'open' : ''}`}>
                 <span></span>
                 <span></span>
                 <span></span>

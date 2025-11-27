@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import DailyQuiz from "./pages/DailyQuiz";
+import QuizBrowser from "./pages/QuizBrowser";
 import QuizBattle from "./pages/QuizBattle";
 import Notes from "./pages/Notes";
 import Chat from "./pages/Chat";
@@ -109,6 +110,14 @@ function App() {
               element={
                 <ProtectedRoute user={user}>
                   <DailyQuiz user={user} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quiz-browser"
+              element={
+                <ProtectedRoute user={user}>
+                  <QuizBrowser user={user} />
                 </ProtectedRoute>
               }
             />
