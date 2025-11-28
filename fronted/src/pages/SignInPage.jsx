@@ -141,17 +141,6 @@ const SignInPage = ({ onLogin }) => {
           </div>
 
           <div className="form-options">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                disabled={loading}
-              />
-              Remember me
-            </label>
-            
             <button 
               type="button" 
               className="forgot-password"

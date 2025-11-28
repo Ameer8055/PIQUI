@@ -741,9 +741,6 @@ const DailyQuiz = ({ user }) => {
               onClick={() => handleSubjectSelect(subject, activeTab === 'fun')}
             >
               <div className="subject-header">
-                <div className="subject-icon">
-                  {subject.icon}
-                </div>
                 <div className="subject-info">
                   <h3>{subject.name}</h3>
                   <p>{subject.description}</p>
@@ -754,10 +751,7 @@ const DailyQuiz = ({ user }) => {
                   <span className="stat-value">{totalQuestions}</span>
                   <span className="stat-label">Total</span>
                 </div>
-                <div className="stat">
-                  <span className="stat-value">{subject.dailyQuestions}</span>
-                  <span className="stat-label">Daily</span>
-                </div>
+                
               </div>
             </div>
           )

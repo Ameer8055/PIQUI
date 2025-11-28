@@ -12,6 +12,7 @@ import Chat from "./pages/Chat";
 import "./App.css";
 import "./components/Toast.css";
 import SignInPage from "./pages/SignInPage";
+import ForgotPassword from "./pages/ForgotPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManageQuestions from "./pages/ManageQuestions";
@@ -94,6 +95,10 @@ function App() {
             <Route
               path="/signin"
               element={<SignInPage onLogin={handleLogin} />}
+            />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
             />
 
             {/* User Protected Routes */}

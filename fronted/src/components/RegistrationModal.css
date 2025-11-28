@@ -15,14 +15,76 @@
 
 .modal-content {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 2rem;
-  max-width: 500px;
+  max-width: 960px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
   animation: modalSlideIn 0.3s ease-out;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+}
+
+.modal-body {
+  display: flex;
+  gap: 2rem;
+}
+
+.modal-visual {
+  flex: 0 0 40%;
+  background: radial-gradient(circle at top, rgba(245, 158, 11, 0.3), rgba(118, 75, 162, 0.8));
+  border-radius: 18px;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  isolation: isolate;
+}
+
+.modal-visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 55%);
+  opacity: 0.8;
+  z-index: -1;
+  animation: float 6s ease-in-out infinite;
+}
+
+.visual-badge {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+
+.modal-app-logo {
+  width: 80%;
+  max-width: 220px;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+  animation: float 5s ease-in-out infinite;
+}
+
+.visual-caption {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.modal-form {
+  flex: 1;
 }
 
 @keyframes modalSlideIn {
@@ -53,7 +115,6 @@
   justify-content: center;
   transition: all 0.3s;
 }
-
 .close-button:hover {
   background: #f3f4f6;
   color: #374151;
@@ -193,6 +254,15 @@
   100% { transform: rotate(360deg); }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 .login-text {
   text-align: center;
   color: #6b7280;
@@ -220,6 +290,14 @@
     padding: 1.25rem;
     border-radius: 16px;
     max-height: 85vh;
+  }
+
+  .modal-body {
+    flex-direction: column-reverse;
+  }
+
+  .modal-visual {
+    flex: unset;
   }
 
   .close-button {
@@ -289,6 +367,14 @@
     padding: 1rem;
     border-radius: 12px;
     max-height: 90vh;
+  }
+
+  .modal-visual {
+    padding: 1.5rem 1rem;
+  }
+
+  .modal-app-logo {
+    max-width: 180px;
   }
 
   .close-button {

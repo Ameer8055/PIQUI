@@ -71,6 +71,15 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   verificationToken: String,
+  resetPasswordOtp: {
+    type: String,
+    select: false
+  },
+  resetPasswordOtpExpires: Date,
+  resetPasswordOtpAttempts: {
+    type: Number,
+    default: 0
+  },
 
   // Profile and Appearance
   avatar: {

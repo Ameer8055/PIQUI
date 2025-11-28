@@ -91,44 +91,52 @@ const LandingPage = ({ onRegister }) => {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-container">
-          <div className="hero-content">
-            <div className="hero-badge" data-animate="badge">Your Ultimate Quiz Destination</div>
-            <h1 className="hero-title" data-animate="title">
-              Welcome to <span className="highlight">PIQUI</span>
-            </h1>
-            <p className="hero-subtitle" data-animate="subtitle">
-              Discover fun quizzes, time-pass challenges, competitive exam preparation, and PSC tests all in one place. 
-              Join thousands of quiz enthusiasts who learn, compete, and grow with our comprehensive quiz platform.
-            </p>
-            
-            <div className="hero-actions" data-animate="actions">
-              <button 
-                className="cta-primary"
-                onClick={() => setShowModal(true)}
-              >
-                Get Started Free
-              </button>
-              <button 
-                className="cta-secondary"
-                onClick={() => navigate("/signin")}
-              >
-                Sign In
-              </button>
+          <div className="hero-grid">
+            <div className="hero-content">
+              <div className="hero-badge" data-animate="badge">Your Ultimate Quiz Destination</div>
+              <h1 className="hero-title" data-animate="title">
+                Welcome to <span className="highlight">PIQUI</span>
+              </h1>
+              <p className="hero-subtitle" data-animate="subtitle">
+                Discover fun quizzes, time-pass challenges, competitive exam preparation, and PSC tests all in one place. 
+                Join thousands of quiz enthusiasts who learn, compete, and grow with our comprehensive quiz platform.
+              </p>
+              
+              <div className="hero-actions" data-animate="actions">
+                <button 
+                  className="cta-primary"
+                  onClick={() => setShowModal(true)}
+                >
+                  Get Started Free
+                </button>
+                <button 
+                  className="cta-secondary"
+                  onClick={() => navigate("/signin")}
+                >
+                  Sign In
+                </button>
+              </div>
+
+              <div className="hero-stats" ref={statsRef} data-animate="stats">
+                <div className="hero-stat">
+                  <div className="stat-value">0+</div>
+                  <div className="stat-text">Questions</div>
+                </div>
+                <div className="hero-stat">
+                  <div className="stat-value">0+</div>
+                  <div className="stat-text">Active Users</div>
+                </div>
+                <div className="hero-stat">
+                  <div className="stat-value">0+</div>
+                  <div className="stat-text">Subjects</div>
+                </div>
+              </div>
             </div>
 
-            <div className="hero-stats" ref={statsRef} data-animate="stats">
-              <div className="hero-stat">
-                <div className="stat-value">0+</div>
-                <div className="stat-text">Questions</div>
-              </div>
-              <div className="hero-stat">
-                <div className="stat-value">0+</div>
-                <div className="stat-text">Active Users</div>
-              </div>
-              <div className="hero-stat">
-                <div className="stat-value">0+</div>
-                <div className="stat-text">Subjects</div>
-              </div>
+            <div className="hero-visual" data-animate="visual">
+              <div className="hero-visual-glow"></div>
+              <img src="/viite.png" alt="PIQUI App preview" className="hero-logo" />
+              <p className="hero-logo-caption">Trusted by quiz lovers across Kerala</p>
             </div>
           </div>
         </div>

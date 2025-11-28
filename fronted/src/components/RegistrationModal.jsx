@@ -72,18 +72,26 @@ const RegistrationModal = ({ onClose, onRegister }) => {
           ×
         </button>
 
-        <div className="modal-header">
-          <h2>Welcome to PIQUI! 🎯</h2>
-          <p>Join our community of quiz enthusiasts</p>
-        </div>
-
-        {error && (
-          <div className="error-message">
-            {error}
+        <div className="modal-body">
+          <div className="modal-visual">
+            <div className="visual-badge">New!</div>
+            <img className="modal-app-logo" src="/viite.png" alt="PIQUI app preview" />
+            <p className="visual-caption">Practice smarter with daily quiz streaks, live battles, and AI-crafted notes.</p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="registration-form">
+          <div className="modal-form">
+            <div className="modal-header">
+              <h2>Welcome to PIQUI!</h2>
+              <p>Join our community of quiz enthusiasts</p>
+            </div>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
             <label htmlFor="name">Full Name *</label>
             <input
@@ -174,25 +182,27 @@ const RegistrationModal = ({ onClose, onRegister }) => {
             </label>
           </div>
 
-          <button 
-            type="submit" 
-            className={`submit-button ${!isFormValid ? 'disabled' : ''}`}
-            disabled={!isFormValid || loading}
-          >
-            {loading ? (
-              <>
-                <div className="spinner"></div>
-                Registering...
-              </>
-            ) : (
-              'Create Account'
-            )}
-          </button>
+            <button 
+              type="submit" 
+              className={`submit-button ${!isFormValid ? 'disabled' : ''}`}
+              disabled={!isFormValid || loading}
+            >
+              {loading ? (
+                <>
+                  <div className="spinner"></div>
+                  Registering...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
 
-          <p className="login-text">
-  Already have an account? <span className="login-link" onClick={() => navigate('/signin')}>Sign In</span>
-</p>
-        </form>
+            <p className="login-text">
+              Already have an account? <span className="login-link" onClick={() => navigate('/signin')}>Sign In</span>
+            </p>
+          </form>
+          </div>
+        </div>
       </div>
     </div>
   )

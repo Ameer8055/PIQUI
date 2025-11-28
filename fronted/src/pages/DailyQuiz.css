@@ -113,18 +113,20 @@
 
 .subject-stats {
   display: flex;
+  justify-content: center;
   gap: 1.5rem;
   border-top: 1px solid #e5e7eb;
   padding-top: 1rem;
 }
 
 .stat {
-  text-align: center;
-  min-width: 80px; /* Add minimum width */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 80px;
 }
 
 .stat-value {
-  display: block;
   font-size: 20px !important;
   font-weight: 700;
   color: var(--subject-color);

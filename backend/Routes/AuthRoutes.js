@@ -4,6 +4,8 @@ const User = require('../Models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { auth } = require('../Middlewares/authMiddleware');
+const { sendMail } = require('../Utils/mailer');
+const crypto = require('crypto');
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -273,6 +275,141 @@ router.put('/me', auth, async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: error.message || 'Server error updating profile'
+    });
+  }
+});
+
+// Forgot password - request OTP
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+resetPasswordOtp');
+
+    if (!user) {
+      // Avoid revealing whether the email exists
+      return res.json({
+        status: 'success',
+        message: 'If an account exists for this email, an OTP has been sent.'
+      });
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    user.resetPasswordOtp = hashedOtp;
+    user.resetPasswordOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.resetPasswordOtpAttempts = 0;
+    await user.save();
+
+    await sendMail({
+      to: user.email,
+      subject: 'PIQUI Password Reset OTP',
+      text: `Use the OTP ${otp} to reset your PIQUI password. This code expires in 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Reset your PIQUI password</h2>
+          <p>Use the following One-Time Password (OTP) to reset your account password:</p>
+          <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #f59e0b; margin: 24px 0;">${otp}</p>
+          <p>This code is valid for the next <strong>10 minutes</strong>.</p>
+          <p>If you did not request this change, you can safely ignore this email.</p>
+          <p>— Team PIQUI</p>
+        </div>
+      `
+    });
+
+    res.json({
+      status: 'success',
+      message: 'If an account exists for this email, an OTP has been sent.'
+    });
+  } catch (error) {
+    console.error('[Forgot Password] error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Unable to process password reset request'
+    });
+  }
+});
+
+// Verify OTP and reset password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email, OTP, and new password are required'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() })
+      .select('+password +resetPasswordOtp +resetPasswordOtpAttempts');
+
+    if (!user || !user.resetPasswordOtp || !user.resetPasswordOtpExpires) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid or expired OTP'
+      });
+    }
+
+    if (user.resetPasswordOtpExpires < new Date()) {
+      user.resetPasswordOtp = undefined;
+      user.resetPasswordOtpExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(400).json({
+        status: 'error',
+        message: 'OTP has expired. Please request a new one.'
+      });
+    }
+
+    if (user.resetPasswordOtpAttempts >= 5) {
+      return res.status(429).json({
+        status: 'error',
+        message: 'Too many incorrect attempts. Please request a new OTP.'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.resetPasswordOtp);
+
+    if (!isMatch) {
+      user.resetPasswordOtpAttempts = (user.resetPasswordOtpAttempts || 0) + 1;
+      await user.save({ validateBeforeSave: false });
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid OTP. Please try again.'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpires = undefined;
+    user.resetPasswordOtpAttempts = 0;
+    await user.save();
+
+    res.json({
+      status: 'success',
+      message: 'Password updated successfully. You can now sign in with your new password.'
+    });
+  } catch (error) {
+    console.error('[Reset Password] error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Unable to reset password'
     });
   }
 });
