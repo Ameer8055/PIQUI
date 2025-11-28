@@ -136,7 +136,7 @@ const LandingPage = ({ onRegister }) => {
             <div className="hero-visual" data-animate="visual">
               <div className="hero-visual-glow"></div>
               <img src="/viite.png" alt="PIQUI App preview" className="hero-logo" />
-              <p className="hero-logo-caption">Trusted by quiz lovers across Kerala</p>
+              <p className="hero-logo-caption">Trusted by quiz lovers</p>
             </div>
           </div>
         </div>
