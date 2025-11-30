@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RegistrationModal from '../components/RegistrationModal'
+import SEO from '../components/SEO'
 import './LandingPage.css'
 
 const LandingPage = ({ onRegister }) => {
@@ -88,6 +89,11 @@ const LandingPage = ({ onRegister }) => {
 
   return (
     <div className="landing-page">
+      <SEO 
+        title="PIQUI - Your Ultimate Quiz Destination | Daily PSC Quizzes & Live Competitions"
+        description="Master competitive exams with PIQUI! Practice daily quizzes in Mathematics, English, Reasoning, GK, and more. Join live quiz battles, track your progress, and ace PSC exams. Free quiz platform for Kerala PSC, UPSC, and competitive exam preparation."
+        keywords="PSC quiz, Kerala PSC, competitive exam quiz, daily quiz, online quiz, PSC preparation, quiz app, mathematics quiz, reasoning quiz, GK quiz, current affairs, quiz battle, live quiz, exam preparation"
+      />
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-container">
