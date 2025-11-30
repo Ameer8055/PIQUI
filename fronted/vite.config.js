@@ -8,7 +8,25 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/piqui-iota\.vercel\.app\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'piqui-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 24 * 60 * 60 // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ],
+        skipWaiting: true,
+        clientsClaim: true
       },
       manifest: {
         name: 'Piqui',
