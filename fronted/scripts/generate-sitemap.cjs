@@ -21,21 +21,33 @@ const pages = [
 ];
 
 (async () => {
-  const stream = new SitemapStream({ hostname: siteUrl });
+  try {
+    const stream = new SitemapStream({ hostname: siteUrl });
 
-  pages.forEach((page) => {
-    stream.write({
-      url: page.url,
-      changefreq: page.changefreq,
-      priority: page.priority,
-      lastmod: page.lastmod
+    pages.forEach((page) => {
+      stream.write({
+        url: page.url,
+        changefreq: page.changefreq,
+        priority: page.priority,
+        lastmod: page.lastmod
+      });
     });
-  });
 
-  stream.end();
+    stream.end();
 
-  const sitemap = await streamToPromise(stream);
-  fs.writeFileSync('./public/sitemap.xml', sitemap.toString());
-  console.log('✅ Sitemap generated successfully at ./public/sitemap.xml');
-  console.log(`📄 Generated ${pages.length} URLs`);
+    const sitemap = await streamToPromise(stream);
+    
+    // Ensure public directory exists
+    const publicDir = './public';
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    
+    fs.writeFileSync('./public/sitemap.xml', sitemap.toString());
+    console.log('✅ Sitemap generated successfully at ./public/sitemap.xml');
+    console.log(`📄 Generated ${pages.length} URLs`);
+  } catch (error) {
+    console.error('❌ Error generating sitemap:', error);
+    process.exit(1);
+  }
 })();
