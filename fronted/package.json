@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=200",
     "preview": "vite preview",
     "build-apk": "npm run build && node scripts/generate-apk.js",
     "generate-sitemap": "node scripts/generate-sitemap.cjs"
