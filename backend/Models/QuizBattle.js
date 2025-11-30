@@ -65,10 +65,6 @@ const quizBattleSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    difficulty: {
-      type: String,
-      default: 'medium'
-    },
     questionCount: {
       type: Number,
       default: 10

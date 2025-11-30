@@ -249,7 +249,6 @@ router.post('/:id/generate-quiz', auth, async (req, res) => {
         const quizSession = new QuizSession({
           user: req.user._id,
           subject: note.subject,
-          difficulty: 'medium',
           questions: [],
           score: 0,
           totalQuestions: questions.length,

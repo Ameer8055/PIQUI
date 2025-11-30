@@ -9,14 +9,16 @@ const { auth } = require('../Middlewares/authMiddleware');
 router.get('/counts', auth, async (req, res) => {
   try {
     const categories = [
-      'general-knowledge',
+      'kerala-gk',
+      'india-gk',
       'mathematics',
       'english',
       'malayalam',
       'constitution',
       'reasoning',
       'computer',
-      'current-affairs'
+      'current-affairs',
+      'science'
     ];
 
     const counts = await Question.aggregate([
@@ -54,7 +56,7 @@ router.get('/counts', auth, async (req, res) => {
 // Get quiz questions
 router.get('/daily', auth, async (req, res) => {
   try {
-    const { category = 'mixed', difficulty = 'mixed', limit = 10 } = req.query;
+    const { category = 'mixed', subCategory = 'All', limit = 10 } = req.query;
     
     let query = { isActive: true };
     
@@ -62,8 +64,8 @@ router.get('/daily', auth, async (req, res) => {
       query.category = category;
     }
     
-    if (difficulty !== 'mixed') {
-      query.difficulty = difficulty;
+    if (subCategory && subCategory !== 'All') {
+      query.subCategory = subCategory;
     }
     
     // Get random questions based on filters
@@ -75,7 +77,7 @@ router.get('/daily', auth, async (req, res) => {
         question: 1, 
         options: 1, 
         category: 1, 
-        difficulty: 1,
+        subCategory: 1,
         explanation: 1,
         tags: 1
       }}
@@ -99,7 +101,7 @@ router.get('/daily', auth, async (req, res) => {
 // Submit quiz results
 router.post('/submit', auth, async (req, res) => {
   try {
-    const { questions, timeSpent, category, difficulty } = req.body;
+    const { questions, timeSpent, category, subCategory } = req.body;
     const userId = req.user._id;
 
     let score = 0;
@@ -132,7 +134,7 @@ router.post('/submit', auth, async (req, res) => {
       accuracy: accuracy,
       timeSpent: timeSpent || 0,
       category: category || 'mixed',
-      difficulty: difficulty || 'mixed',
+      subCategory: subCategory || 'All',
       completed: true
     });
 

@@ -55,7 +55,8 @@ const Notes = ({ user }) => {
   });
 
   const subjects = [
-    "General Knowledge",
+    "India GK",
+    "Kerala GK",
     "Mathematics",
     "English",
     "Malayalam",
@@ -63,6 +64,7 @@ const Notes = ({ user }) => {
     "Reasoning",
     "Computer",
     "Current Affairs",
+    "Science",
   ];
 
   const fontOptions = [

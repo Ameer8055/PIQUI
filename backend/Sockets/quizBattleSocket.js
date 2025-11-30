@@ -10,14 +10,16 @@ const COUNTDOWN_TIME = 3 * 1000;
 const INTERMISSION_TIME = 2 * 1000;
 
 const VALID_SUBJECTS = new Set([
-  'general-knowledge',
+  'kerala-gk',
+  'india-gk',
   'mathematics',
   'english',
   'malayalam',
   'constitution',
   'reasoning',
   'computer',
-  'current-affairs'
+  'current-affairs',
+  'science'
 ]);
 
 const sanitizeQuestionForClient = (question, index, total) => ({
@@ -185,7 +187,6 @@ module.exports = function registerQuizBattleSocket(io) {
     const payload = {
       battleId: battle.battleId,
       subject: battle.subject,
-      difficulty: battle.difficulty,
       questionCount: battle.questions.length,
       questions: questionDocs,
       players: playerEntries.map((player) => ({
@@ -441,7 +442,6 @@ module.exports = function registerQuizBattleSocket(io) {
       const battle = {
         battleId,
         subject,
-        difficulty: 'mixed',
         questions,
         currentQuestionIndex: 0,
         currentQuestionState: null,

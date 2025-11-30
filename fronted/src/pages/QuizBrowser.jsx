@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from '../utils/toast'
+import { getCategoriesForSubject } from '../utils/quizCategories'
 import './QuizBrowser.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -18,11 +19,14 @@ const QuizBrowser = ({ user }) => {
   const [userAnswers, setUserAnswers] = useState({}) // { questionId: { selectedAnswer: number, isCorrect: boolean } }
   const [showTimedQuiz, setShowTimedQuiz] = useState(false)
   const [showCopyModal, setShowCopyModal] = useState(false)
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState('')
+  const [selectedSubCategory, setSelectedSubCategory] = useState('All')
   
   const questionsPerPage = 50
   const subject = location.state?.subject || null
   const category = location.state?.category || null
+  const initialSubCategory = location.state?.subCategory || 'All'
   const isFunQuiz = location.state?.isFunQuiz || false
 
   useEffect(() => {
@@ -36,8 +40,16 @@ const QuizBrowser = ({ user }) => {
       return
     }
 
+    setSelectedSubCategory(initialSubCategory)
     fetchQuestions()
-  }, [user, currentPage, category])
+  }, [user, currentPage, category, initialSubCategory])
+
+  useEffect(() => {
+    if (selectedSubCategory !== initialSubCategory) {
+      setCurrentPage(1)
+      fetchQuestions()
+    }
+  }, [selectedSubCategory])
 
   const fetchQuestions = async () => {
     setLoading(true)
@@ -61,9 +73,15 @@ const QuizBrowser = ({ user }) => {
       if (response.data.success || response.data.status === 'success') {
         let allQuestions = response.data.data?.questions || response.data.data || []
         
-        // Filter by category if specified
+        // Filter by category and subCategory if specified
         if (category && category !== 'mixed') {
-          allQuestions = allQuestions.filter(q => q.category === category && q.isActive !== false)
+          allQuestions = allQuestions.filter(q => {
+            const categoryMatch = q.category === category && q.isActive !== false
+            if (selectedSubCategory && selectedSubCategory !== 'All') {
+              return categoryMatch && q.subCategory === selectedSubCategory
+            }
+            return categoryMatch
+          })
         } else {
           allQuestions = allQuestions.filter(q => q.isActive !== false)
         }
@@ -249,6 +267,7 @@ ${question.explanation ? `Current Explanation: ${question.explanation}\n\n` : ''
       state: {
         subject: subject,
         category: category,
+        subCategory: selectedSubCategory,
         isFunQuiz: isFunQuiz,
         startTimedQuiz: true
       }
@@ -277,9 +296,30 @@ ${question.explanation ? `Current Explanation: ${question.explanation}\n\n` : ''
         </button>
         <h1>{subject?.name || 'Quiz Questions'}</h1>
         <p>Browse and practice questions at your own pace</p>
-        <div className="quiz-stats">
-          <span>Total Questions: {totalQuestions}</span>
-          <span>Page {currentPage} of {totalPages}</span>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <button
+            className="category-select-btn"
+            onClick={() => setShowCategoryModal(true)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#3B82F6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <span>📁 Category: {selectedSubCategory}</span>
+            <span>▼</span>
+          </button>
+          <div className="quiz-stats">
+            <span>Total Questions: {totalQuestions}</span>
+            <span>Page {currentPage} of {totalPages}</span>
+          </div>
         </div>
       </div>
 
@@ -489,6 +529,51 @@ ${question.explanation ? `Current Explanation: ${question.explanation}\n\n` : ''
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* Category Selection Modal */}
+      {showCategoryModal && category && (
+        <div className="modal-overlay copy-prompt-modal-overlay" onClick={() => setShowCategoryModal(false)}>
+          <div className="modal-content copy-prompt-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>Select Category - {subject?.name}</h2>
+              <button className="modal-close" onClick={() => setShowCategoryModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="category-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                gap: '0.75rem',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                padding: '1rem'
+              }}>
+                {getCategoriesForSubject(category).map(cat => (
+                  <button
+                    key={cat}
+                    className={`option-btn ${selectedSubCategory === cat ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedSubCategory(cat)
+                      setShowCategoryModal(false)
+                    }}
+                    style={{
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      border: '2px solid #E5E7EB',
+                      background: selectedSubCategory === cat ? '#3B82F6' : 'white',
+                      color: selectedSubCategory === cat ? 'white' : '#374151',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

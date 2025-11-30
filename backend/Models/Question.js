@@ -25,13 +25,12 @@ if (mongoose.models.Question) {
     category: {
       type: String,
       required: true,
-      enum: ['general-knowledge', 'mathematics', 'english', 'malayalam', 
-             'constitution', 'reasoning', 'computer', 'current-affairs']
+      enum: ['kerala-gk', 'india-gk', 'mathematics', 'english', 'malayalam', 
+             'constitution', 'reasoning', 'computer', 'current-affairs', 'science']
     },
-    difficulty: {
+    subCategory: {
       type: String,
-      enum: ['easy', 'medium', 'hard'],
-      default: 'medium'
+      default: 'All'
     },
     tags: [String],
     createdBy: {

@@ -117,17 +117,17 @@ router.post('/questions/bulk-import', async (req, res) => {
     }
 
     const validCategories = [
-      'general-knowledge',
+      'kerala-gk',
+      'india-gk',
       'mathematics',
       'english',
       'malayalam',
       'constitution',
       'reasoning',
       'computer',
-      'current-affairs'
+      'current-affairs',
+      'science'
     ];
-
-    const validDifficulties = ['easy', 'medium', 'hard'];
 
     const validatedQuestions = [];
     const errors = [];
@@ -163,10 +163,6 @@ router.post('/questions/bulk-import', async (req, res) => {
         questionErrors.push(`Category must be one of: ${validCategories.join(', ')}`);
       }
 
-      if (q.difficulty && !validDifficulties.includes(q.difficulty)) {
-        questionErrors.push(`Difficulty must be one of: ${validDifficulties.join(', ')}`);
-      }
-
       // If there are errors, add to errors array
       if (questionErrors.length > 0) {
         errors.push({
@@ -184,7 +180,7 @@ router.post('/questions/bulk-import', async (req, res) => {
         options: q.options.map(opt => opt.trim()),
         correctAnswer: q.correctAnswer,
         category: q.category,
-        difficulty: q.difficulty || 'medium',
+        subCategory: q.subCategory || 'All',
         explanation: q.explanation ? q.explanation.trim() : '',
         tags: q.tags ? (Array.isArray(q.tags) ? q.tags : q.tags.split(',').map(t => t.trim()).filter(t => t)) : [],
         isActive: q.isActive !== undefined ? q.isActive : true,

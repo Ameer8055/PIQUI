@@ -121,7 +121,6 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
         const quizSession = new QuizSession({
           user: req.user._id,
           subject: 'AI Generated',
-          difficulty: 'medium',
           questions: [],
           score: 0,
           totalQuestions: questions.length,

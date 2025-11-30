@@ -39,10 +39,9 @@ const quizSessionSchema = new mongoose.Schema({
     type: String,
     default: 'mixed'
   },
-  difficulty: {
+  subCategory: {
     type: String,
-    enum: ['easy', 'medium', 'hard', 'mixed'],
-    default: 'mixed'
+    default: 'All'
   },
   timeLimit: {
     type: Number, // in minutes

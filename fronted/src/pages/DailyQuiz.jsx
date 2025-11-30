@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
+import { getCategoriesForSubject } from '../utils/quizCategories'
 import './DailyQuiz.css'
 
 const DailyQuiz = ({ user }) => {
@@ -11,8 +12,10 @@ const DailyQuiz = ({ user }) => {
   const [quizSettings, setQuizSettings] = useState({
     numberOfQuestions: 10,
     timePerQuestion: 30,
-    difficulty: 'medium'
+    subCategory: 'All'
   })
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('All')
   const [quizStarted, setQuizStarted] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
@@ -35,15 +38,24 @@ const DailyQuiz = ({ user }) => {
   const competitiveSubjects = [
     {
       id: 1,
-      name: '📚 General Knowledge',
-      description: 'Current affairs, history, geography, and more',
-      icon: '🌍',
+      name: '🇮🇳 India GK',
+      description: 'Indian history, geography, economy, and personalities',
+      icon: '🇮🇳',
       color: '#3B82F6',
-      totalQuestions: 1250,
+      totalQuestions: 625,
       dailyQuestions: 15
     },
     {
       id: 2,
+      name: '🌴 Kerala GK',
+      description: 'Kerala history, geography, economy, and personalities',
+      icon: '🌴',
+      color: '#10B981',
+      totalQuestions: 625,
+      dailyQuestions: 15
+    },
+    {
+      id: 3,
       name: '🔢 Mathematics',
       description: 'Arithmetic, algebra, geometry, and statistics',
       icon: '🧮',
@@ -52,7 +64,7 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 12
     },
     {
-      id: 3,
+      id: 4,
       name: '📝 English Language',
       description: 'Grammar, vocabulary, comprehension, and writing',
       icon: '📖',
@@ -61,7 +73,7 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 10
     },
     {
-      id: 4,
+      id: 5,
       name: '✍️ Malayalam',
       description: 'Malayalam grammar, literature, and comprehension',
       icon: '🖋️',
@@ -70,7 +82,7 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 8
     },
     {
-      id: 5,
+      id: 6,
       name: '⚖️ Constitution',
       description: 'Indian Constitution, rights, and governance',
       icon: '🏛️',
@@ -79,7 +91,7 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 10
     },
     {
-      id: 6,
+      id: 7,
       name: '💡 Reasoning',
       description: 'Logical and analytical reasoning',
       icon: '🎯',
@@ -88,7 +100,7 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 8
     },
     {
-      id: 7,
+      id: 8,
       name: '💻 Computer',
       description: 'Computer fundamentals and IT',
       icon: '🖥️',
@@ -97,13 +109,22 @@ const DailyQuiz = ({ user }) => {
       dailyQuestions: 6
     },
     {
-      id: 8,
+      id: 9,
       name: '📊 Current Affairs',
       description: 'Latest news and events',
       icon: '📰',
       color: '#84CC16',
       totalQuestions: 'Daily',
       dailyQuestions: 20
+    },
+    {
+      id: 10,
+      name: '🔬 Science',
+      description: 'Biology, Chemistry, and Physics',
+      icon: '🔬',
+      color: '#8B5CF6',
+      totalQuestions: 500,
+      dailyQuestions: 10
     }
   ]
 
@@ -199,16 +220,18 @@ const DailyQuiz = ({ user }) => {
       return funCategoryMap[subjectId] || 'general'
     } else {
       const competitiveCategoryMap = {
-        1: 'general-knowledge',
-        2: 'mathematics',
-        3: 'english',
-        4: 'malayalam',
-        5: 'constitution',
-        6: 'reasoning',
-        7: 'computer',
-        8: 'current-affairs'
+        1: 'india-gk',
+        2: 'kerala-gk',
+        3: 'mathematics',
+        4: 'english',
+        5: 'malayalam',
+        6: 'constitution',
+        7: 'reasoning',
+        8: 'computer',
+        9: 'current-affairs',
+        10: 'science'
       }
-      return competitiveCategoryMap[subjectId] || 'general-knowledge'
+      return competitiveCategoryMap[subjectId] || 'india-gk'
     }
   }
 
@@ -269,10 +292,13 @@ const DailyQuiz = ({ user }) => {
     if (location.state && location.state.startTimedQuiz) {
       const subject = location.state.subject
       const category = location.state.category
+      const subCategory = location.state.subCategory || 'All'
       const isFunQuiz = location.state.isFunQuiz || false
       
       if (subject && category) {
         setSelectedSubject({ ...subject, isFunQuiz })
+        setSelectedCategory(subCategory)
+        setQuizSettings(prev => ({ ...prev, subCategory }))
         setShowSettings(true)
         // Clear the state
         navigate(location.pathname, { replace: true, state: null })
@@ -329,6 +355,7 @@ const DailyQuiz = ({ user }) => {
       state: {
         subject: subject,
         category: category,
+        subCategory: 'All',
         isFunQuiz: isFunQuiz
       }
     })
@@ -364,12 +391,12 @@ const DailyQuiz = ({ user }) => {
       }
 
       const category = getCategoryFromSubject(selectedSubject.id, selectedSubject.isFunQuiz)
-      const difficulty = quizSettings.difficulty
+      const subCategory = quizSettings.subCategory || 'All'
       
       const response = await axios.get(`${API_BASE_URL}/quiz/daily`, {
         params: {
           category: category,
-          difficulty: difficulty,
+          subCategory: subCategory,
           limit: quizSettings.numberOfQuestions
         },
         headers: {
@@ -379,7 +406,7 @@ const DailyQuiz = ({ user }) => {
 
       if (response.data.status === 'success') {
         if (!response.data.data.questions || response.data.data.questions.length === 0) {
-          setError('No questions available for this category and difficulty. Please try different settings.')
+          setError('No questions available for this category. Please try different settings.')
           setLoading(false)
           return
         }
@@ -478,7 +505,7 @@ const DailyQuiz = ({ user }) => {
           questions: userAnswers,
           timeSpent: timeSpent,
           category: category,
-          difficulty: quizSettings.difficulty,
+          subCategory: quizSettings.subCategory || 'All',
           quizType: selectedSubject?.isFunQuiz ? 'fun' : 'competitive'
         }, {
           headers: {
@@ -805,20 +832,29 @@ const DailyQuiz = ({ user }) => {
                 </div>
               </div>
 
-              {/* Difficulty */}
+              {/* Category Selection */}
               <div className="setting-group">
-                <label>Difficulty Level</label>
-                <div className="options-row">
-                  {['easy', 'medium', 'hard'].map(difficulty => (
-                    <button
-                      key={difficulty}
-                      className={`option-btn ${quizSettings.difficulty === difficulty ? 'selected' : ''}`}
-                      onClick={() => handleSettingsChange('difficulty', difficulty)}
-                    >
-                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                    </button>
-                  ))}
-                </div>
+                <label>Category</label>
+                <button
+                  className="category-select-btn"
+                  onClick={() => setShowCategoryModal(true)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#F3F4F6',
+                    border: '2px solid #E5E7EB',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    textAlign: 'left',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <span>{quizSettings.subCategory || 'All'}</span>
+                  <span>▼</span>
+                </button>
               </div>
 
               {/* Quiz Summary */}
@@ -834,8 +870,8 @@ const DailyQuiz = ({ user }) => {
                     <span>{Math.round(quizSettings.numberOfQuestions * quizSettings.timePerQuestion / 60)} min</span>
                   </div>
                   <div className="summary-item">
-                    <span>Difficulty:</span>
-                    <span>{quizSettings.difficulty}</span>
+                    <span>Category:</span>
+                    <span>{quizSettings.subCategory || 'All'}</span>
                   </div>
                   <div className="summary-item">
                     <span>Quiz Type:</span>
@@ -894,6 +930,57 @@ const DailyQuiz = ({ user }) => {
               >
                 {loading ? 'Loading...' : '🚀 Start Quiz'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Selection Modal */}
+      {showCategoryModal && selectedSubject && (
+        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+          <div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>Select Category - {selectedSubject.name}</h2>
+              <button 
+                className="close-btn"
+                onClick={() => setShowCategoryModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="settings-content">
+              <div className="category-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                gap: '0.75rem',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                padding: '1rem'
+              }}>
+                {getCategoriesForSubject(getCategoryFromSubject(selectedSubject.id, selectedSubject.isFunQuiz)).map(category => (
+                  <button
+                    key={category}
+                    className={`option-btn ${quizSettings.subCategory === category ? 'selected' : ''}`}
+                    onClick={() => {
+                      handleSettingsChange('subCategory', category)
+                      setSelectedCategory(category)
+                      setShowCategoryModal(false)
+                    }}
+                    style={{
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      border: '2px solid #E5E7EB',
+                      background: quizSettings.subCategory === category ? '#3B82F6' : 'white',
+                      color: quizSettings.subCategory === category ? 'white' : '#374151',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

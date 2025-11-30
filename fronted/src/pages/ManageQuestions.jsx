@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "../utils/toast";
+import { getCategoriesForSubject } from "../utils/quizCategories";
 import "./ManageQuestions.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -22,7 +23,8 @@ const ManageQuestions = ({ user }) => {
 
   const categories = [
     "all",
-    "general-knowledge",
+    "kerala-gk",
+    "india-gk",
     "mathematics",
     "english",
     "malayalam",
@@ -30,6 +32,7 @@ const ManageQuestions = ({ user }) => {
     "reasoning",
     "computer",
     "current-affairs",
+    "science",
   ];
 
   const [formData, setFormData] = useState({
@@ -37,8 +40,8 @@ const ManageQuestions = ({ user }) => {
     options: ["", "", "", ""],
     correctAnswer: 0,
     explanation: "",
-    category: "general-knowledge",
-    difficulty: "medium",
+    category: "india-gk",
+    subCategory: "All",
     tags: "",
   });
 
@@ -125,7 +128,7 @@ const ManageQuestions = ({ user }) => {
       correctAnswer: question.correctAnswer,
       explanation: question.explanation || "",
       category: question.category,
-      difficulty: question.difficulty,
+      subCategory: question.subCategory || "All",
       tags: question.tags ? question.tags.join(", ") : "",
     });
     setShowAddForm(true);
@@ -163,8 +166,8 @@ const ManageQuestions = ({ user }) => {
       options: ["", "", "", ""],
       correctAnswer: 0,
       explanation: "",
-      category: "general-knowledge",
-      difficulty: "medium",
+      category: "india-gk",
+      subCategory: "All",
       tags: "",
     });
   };
@@ -178,7 +181,8 @@ const ManageQuestions = ({ user }) => {
   const getCategoryDisplayName = (category) => {
     const names = {
       all: "All Subjects",
-      "general-knowledge": "General Knowledge",
+      "kerala-gk": "Kerala GK",
+      "india-gk": "India GK",
       mathematics: "Mathematics",
       english: "English",
       malayalam: "Malayalam",
@@ -186,6 +190,7 @@ const ManageQuestions = ({ user }) => {
       reasoning: "Reasoning",
       computer: "Computer",
       "current-affairs": "Current Affairs",
+      science: "Science",
     };
     return names[category] || category;
   };
@@ -279,8 +284,8 @@ const ManageQuestions = ({ user }) => {
           values[headers.indexOf('option4')] || values[headers.indexOf('option4')] || ''
         ].filter(opt => opt),
         correctAnswer: parseInt(values[headers.indexOf('correctanswer')] || '0', 10),
-        category: values[headers.indexOf('category')] || 'general-knowledge',
-        difficulty: values[headers.indexOf('difficulty')] || 'medium',
+        category: values[headers.indexOf('category')] || 'india-gk',
+        subCategory: values[headers.indexOf('subcategory')] || 'All',
         explanation: values[headers.indexOf('explanation')] || '',
         tags: values[headers.indexOf('tags')] ? values[headers.indexOf('tags')].split(';').map(t => t.trim()) : []
       };
@@ -396,8 +401,8 @@ const ManageQuestions = ({ user }) => {
     "question": "What is the capital of India?",
     "options": ["Mumbai", "Delhi", "Kolkata", "Chennai"],
     "correctAnswer": 1,
-    "category": "general-knowledge",
-    "difficulty": "easy",
+    "category": "india-gk",
+    "subCategory": "History",
     "explanation": "Delhi is the capital of India",
     "tags": ["geography", "india"]
   }
@@ -406,7 +411,7 @@ const ManageQuestions = ({ user }) => {
               
               <div className="format-example">
                 <h4>CSV Format:</h4>
-                <p>CSV should have columns: question, option1, option2, option3, option4, correctAnswer, category, difficulty, explanation, tags</p>
+                <p>CSV should have columns: question, option1, option2, option3, option4, correctAnswer, category, subCategory, explanation, tags</p>
                 <p className="note">Note: correctAnswer should be 0-based index (0, 1, 2, or 3)</p>
               </div>
             </div>
@@ -420,8 +425,8 @@ const ManageQuestions = ({ user }) => {
                       question: "Sample Question 1",
                       options: ["Option A", "Option B", "Option C", "Option D"],
                       correctAnswer: 0,
-                      category: "general-knowledge",
-                      difficulty: "medium",
+                      category: "india-gk",
+                      subCategory: "All",
                       explanation: "This is an explanation",
                       tags: ["sample", "template"]
                     },
@@ -430,7 +435,7 @@ const ManageQuestions = ({ user }) => {
                       options: ["Option A", "Option B", "Option C", "Option D"],
                       correctAnswer: 1,
                       category: "mathematics",
-                      difficulty: "hard",
+                      subCategory: "Algebra",
                       explanation: "Another explanation",
                       tags: ["math", "template"]
                     }
@@ -633,9 +638,15 @@ const ManageQuestions = ({ user }) => {
                 <label>Category</label>
                 <select
                   value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newCategory = e.target.value
+                    const categories = getCategoriesForSubject(newCategory)
+                    setFormData({ 
+                      ...formData, 
+                      category: newCategory,
+                      subCategory: categories[0] || 'All'
+                    })
+                  }}
                 >
                   {categories
                     .filter((cat) => cat !== "all")
@@ -648,16 +659,16 @@ const ManageQuestions = ({ user }) => {
               </div>
 
               <div className="form-group">
-                <label>Difficulty</label>
+                <label>Sub Category</label>
                 <select
-                  value={formData.difficulty}
+                  value={formData.subCategory}
                   onChange={(e) =>
-                    setFormData({ ...formData, difficulty: e.target.value })
+                    setFormData({ ...formData, subCategory: e.target.value })
                   }
                 >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
+                  {getCategoriesForSubject(formData.category).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -713,9 +724,11 @@ const ManageQuestions = ({ user }) => {
                 <div key={question._id} className="question-card">
                   <h4>{question.question}</h4>
                   <div className="question-meta">
-                    <span className={`difficulty ${question.difficulty}`}>
-                      {question.difficulty}
-                    </span>
+                    {question.subCategory && question.subCategory !== 'All' && (
+                      <span className="subcategory">
+                        {question.subCategory}
+                      </span>
+                    )}
                     <span className="category">
                       {getCategoryDisplayName(question.category)}
                     </span>

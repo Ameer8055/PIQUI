@@ -8,14 +8,16 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const SUBJECTS = [
-  { id: 'general-knowledge', name: '🌍 General Knowledge', color: '#3B82F6' },
+  { id: 'india-gk', name: '🇮🇳 India GK', color: '#3B82F6' },
+  { id: 'kerala-gk', name: '🌴 Kerala GK', color: '#10B981' },
   { id: 'mathematics', name: '🔢 Mathematics', color: '#EF4444' },
   { id: 'english', name: '📝 English', color: '#10B981' },
   { id: 'malayalam', name: '🖋️ Malayalam', color: '#F59E0B' },
   { id: 'constitution', name: '⚖️ Constitution', color: '#8B5CF6' },
   { id: 'reasoning', name: '💡 Reasoning', color: '#EC4899' },
   { id: 'computer', name: '💻 Computer', color: '#06B6D4' },
-  { id: 'current-affairs', name: '📰 Current Affairs', color: '#F59E0B' }
+  { id: 'current-affairs', name: '📰 Current Affairs', color: '#84CC16' },
+  { id: 'science', name: '🔬 Science', color: '#8B5CF6' }
 ]
 
 const QuizBattle = ({ user }) => {
