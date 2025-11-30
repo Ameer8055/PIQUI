@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-sitemap.cjs || true",
     "build": "vite build",
     "lint": "eslint . --max-warnings=200",
     "preview": "vite preview",
-    "build-apk": "npm run build && node scripts/generate-apk.js"
+    "build-apk": "npm run build && node scripts/generate-apk.js",
+    "generate-sitemap": "node scripts/generate-sitemap.cjs"
 
   },
   "dependencies": {
