@@ -678,14 +678,17 @@
   }
 
   .hero-title-wrapper {
-    justify-content: center;
-    gap: 0.75rem;
+   display: flex;
+  justify-content: space-between;
+  align-items: center;
   }
 
-  .hero-title-icon {
-    display: block; /* Show icon on mobile */
-    width: clamp(50px, 10vw, 70px);
-  }
+ .hero-title-icon {
+  display: block;
+  width: clamp(70px, 10vw, 70px);
+  order: 2; /* Moves it to the right */
+  margin-right: 80px;
+}
 
   .hero-title {
     font-size: clamp(1.75rem, 5vw, 2.5rem);
