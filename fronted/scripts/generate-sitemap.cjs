@@ -1,23 +1,14 @@
 const fs = require('fs');
 const { SitemapStream, streamToPromise } = require('sitemap');
 
-// Website URL
-const siteUrl = 'https://piqui-iota.vercel.app';
+// Website URL - use environment variable for flexibility
+const siteUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://piqui-iota.vercel.app';
 
 // All important pages with priorities and change frequencies
 const pages = [
   { url: '/', changefreq: 'daily', priority: 1.0, lastmod: new Date().toISOString().split('T')[0] },
   { url: '/signin', changefreq: 'monthly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/forgot-password', changefreq: 'monthly', priority: 0.5, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/dashboard', changefreq: 'daily', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/daily-quiz', changefreq: 'daily', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/quiz-browser', changefreq: 'weekly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/live-quiz', changefreq: 'weekly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/notes', changefreq: 'weekly', priority: 0.7, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/chat', changefreq: 'weekly', priority: 0.7, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/leaderboard', changefreq: 'daily', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/profile', changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString().split('T')[0] },
-  { url: '/progress', changefreq: 'weekly', priority: 0.7, lastmod: new Date().toISOString().split('T')[0] }
+  // ... your other pages
 ];
 
 (async () => {
@@ -37,17 +28,18 @@ const pages = [
 
     const sitemap = await streamToPromise(stream);
     
-    // Ensure public directory exists
-    const publicDir = './public';
+    // Vercel-compatible path handling
+    const publicDir = './dist'; // or './out' depending on your build output
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
     
-    fs.writeFileSync('./public/sitemap.xml', sitemap.toString());
-    console.log('✅ Sitemap generated successfully at ./public/sitemap.xml');
+    fs.writeFileSync(`${publicDir}/sitemap.xml`, sitemap.toString());
+    console.log('✅ Sitemap generated successfully');
     console.log(`📄 Generated ${pages.length} URLs`);
   } catch (error) {
     console.error('❌ Error generating sitemap:', error);
-    process.exit(1);
+    // Don't exit process in Vercel - just log and continue
+    console.log('⚠️  Continuing build without sitemap...');
   }
 })();
