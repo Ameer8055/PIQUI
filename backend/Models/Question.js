@@ -26,7 +26,8 @@ if (mongoose.models.Question) {
       type: String,
       required: true,
       enum: ['kerala-gk', 'india-gk', 'mathematics', 'english', 'malayalam', 
-             'constitution', 'reasoning', 'computer', 'current-affairs', 'science']
+             'constitution', 'reasoning', 'computer', 'current-affairs', 'science',
+             'movies-tv', 'music', 'video-games', 'sports', 'food', 'travel', 'books', 'pop-culture']
     },
     subCategory: {
       type: String,

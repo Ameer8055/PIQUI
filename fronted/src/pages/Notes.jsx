@@ -531,19 +531,19 @@ const Notes = ({ user }) => {
           className={`tab-btn ${activeSection === "pdf-sharing" ? "active" : ""}`}
           onClick={() => setActiveSection("pdf-sharing")}
         >
-          Resources
+          Notes
         </button>
         <button
           className={`tab-btn ${activeSection === "notebook" ? "active" : ""}`}
           onClick={() => setActiveSection("notebook")}
         >
-           Notebook
+           Book
         </button>
         <button
           className={`tab-btn ${activeSection === "quiz-maker" ? "active" : ""}`}
           onClick={() => setActiveSection("quiz-maker")}
         >
-          Quiz Maker
+          AI Quiz
         </button>
       </div>
 

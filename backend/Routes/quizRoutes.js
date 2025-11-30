@@ -18,7 +18,15 @@ router.get('/counts', auth, async (req, res) => {
       'reasoning',
       'computer',
       'current-affairs',
-      'science'
+      'science',
+      'movies-tv',
+      'music',
+      'video-games',
+      'sports',
+      'food',
+      'travel',
+      'books',
+      'pop-culture'
     ];
 
     const counts = await Question.aggregate([

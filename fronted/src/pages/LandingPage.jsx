@@ -100,9 +100,12 @@ const LandingPage = ({ onRegister }) => {
           <div className="hero-grid">
             <div className="hero-content">
               <div className="hero-badge" data-animate="badge">Your Ultimate Quiz Destination</div>
-              <h1 className="hero-title" data-animate="title">
-                Welcome to <span className="highlight">PIQUI</span>
-              </h1>
+              <div className="hero-title-wrapper" data-animate="title">
+                <img src="/viite.png" alt="PIQUI" className="hero-title-icon" />
+                <h1 className="hero-title">
+                  Welcome to <span className="highlight">PIQUI</span>
+                </h1>
+              </div>
               <p className="hero-subtitle" data-animate="subtitle">
                 Discover fun quizzes, time-pass challenges, competitive exam preparation, and PSC tests all in one place. 
                 Join thousands of quiz enthusiasts who learn, compete, and grow with our comprehensive quiz platform.
@@ -142,7 +145,7 @@ const LandingPage = ({ onRegister }) => {
             <div className="hero-visual" data-animate="visual">
               <div className="hero-visual-glow"></div>
               <img src="/viite.png" alt="PIQUI App preview" className="hero-logo" />
-              <p className="hero-logo-caption">Trusted by quiz lovers</p>
+              <p className="hero-logo-caption"></p>
             </div>
           </div>
         </div>

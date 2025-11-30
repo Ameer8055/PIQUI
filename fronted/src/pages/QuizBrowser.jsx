@@ -125,31 +125,67 @@ const QuizBrowser = ({ user }) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     
     if (isMobile) {
-      // Try to open ChatGPT mobile app first
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
       const isAndroid = /Android/i.test(navigator.userAgent)
+      let shouldOpenWeb = true
+      let visibilityTimeout = null
+      
+      // Track if page becomes hidden (app opened)
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          // App opened, cancel web opening
+          shouldOpenWeb = false
+          if (visibilityTimeout) {
+            clearTimeout(visibilityTimeout)
+          }
+        }
+      }
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange, { once: true })
       
       if (isIOS) {
         // Try iOS app URL scheme
         window.location.href = 'chatgpt://'
-        // Fallback to web after delay
-        setTimeout(() => {
-          window.open('https://chatgpt.com', '_blank')
-        }, 1500)
+        
+        // Check after delay if app opened (if page is still visible, app didn't open)
+        visibilityTimeout = setTimeout(() => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange)
+          if (shouldOpenWeb && document.visibilityState === 'visible') {
+            // App didn't open, open web version
+            window.open('https://chatgpt.com', '_blank')
+          }
+        }, 500)
       } else if (isAndroid) {
-        // Try Android intent
+        // Try Android intent with fallback
         try {
-          const intentUrl = `intent://chatgpt.com/#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent('https://chatgpt.com')};end`
-          window.location.href = intentUrl
+          // Create a hidden iframe to attempt app opening
+          const iframe = document.createElement('iframe')
+          iframe.style.display = 'none'
+          iframe.style.width = '0'
+          iframe.style.height = '0'
+          iframe.src = 'chatgpt://'
+          document.body.appendChild(iframe)
+          
+          // Remove iframe and check if we need to open web
+          visibilityTimeout = setTimeout(() => {
+            document.body.removeChild(iframe)
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            
+            // If page is still visible, app didn't open
+            if (shouldOpenWeb && document.visibilityState === 'visible') {
+              window.open('https://chatgpt.com', '_blank')
+            }
+          }, 800)
         } catch (e) {
-          window.open('https://chatgpt.com', '_blank')
+          // If intent fails, open web
+          document.removeEventListener('visibilitychange', handleVisibilityChange)
+          if (shouldOpenWeb) {
+            window.open('https://chatgpt.com', '_blank')
+          }
         }
-        // Fallback to web after delay
-        setTimeout(() => {
-          window.open('https://chatgpt.com', '_blank')
-        }, 1500)
       } else {
         window.open('https://chatgpt.com', '_blank')
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
       }
     } else {
       // Desktop: open ChatGPT web in new tab

@@ -33,6 +33,14 @@ const ManageQuestions = ({ user }) => {
     "computer",
     "current-affairs",
     "science",
+    "movies-tv",
+    "music",
+    "video-games",
+    "sports",
+    "food",
+    "travel",
+    "books",
+    "pop-culture",
   ];
 
   const [formData, setFormData] = useState({
@@ -191,6 +199,14 @@ const ManageQuestions = ({ user }) => {
       computer: "Computer",
       "current-affairs": "Current Affairs",
       science: "Science",
+      "movies-tv": "Movies & TV Shows",
+      music: "Music & Artists",
+      "video-games": "Video Games",
+      sports: "Sports",
+      food: "Food & Cuisine",
+      travel: "Travel & Places",
+      books: "Books & Literature",
+      "pop-culture": "Pop Culture",
     };
     return names[category] || category;
   };

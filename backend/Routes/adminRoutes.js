@@ -126,7 +126,15 @@ router.post('/questions/bulk-import', async (req, res) => {
       'reasoning',
       'computer',
       'current-affairs',
-      'science'
+      'science',
+      'movies-tv',
+      'music',
+      'video-games',
+      'sports',
+      'food',
+      'travel',
+      'books',
+      'pop-culture'
     ];
 
     const validatedQuestions = [];
