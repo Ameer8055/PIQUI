@@ -206,7 +206,7 @@ const Profile = ({ user }) => {
     return (
       <div className="profile-page">
         <div className="loading-container">
-          <div className="spinner">⏳</div>
+          <div className="spinner"></div>
           <p>Loading your profile...</p>
         </div>
       </div>

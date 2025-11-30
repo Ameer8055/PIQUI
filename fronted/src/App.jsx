@@ -63,7 +63,7 @@ function App() {
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="spinner">Loading...</div>
+        <div className="spinner"></div>
       </div>
     );
   }

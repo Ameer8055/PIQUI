@@ -221,7 +221,7 @@ const Navbar = ({ user }) => {
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
             >
-              <span className={`dots-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+              <span className={`hamburger-menu ${isMobileMenuOpen ? 'open' : ''}`}>
                 <span></span>
                 <span></span>
                 <span></span>

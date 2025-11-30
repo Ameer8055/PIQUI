@@ -91,7 +91,7 @@ const ProgressTracker = ({ user }) => {
     return (
       <div className="progress-tracker-page">
         <div className="loading-container">
-          <div className="spinner">⏳</div>
+          <div className="spinner"></div>
           <p>Loading your progress...</p>
         </div>
       </div>

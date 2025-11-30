@@ -84,7 +84,7 @@ const Leaderboard = ({ user }) => {
     return (
       <div className="leaderboard-page">
         <div className="loading-container">
-          <div className="spinner">⏳</div>
+          <div className="spinner"></div>
           <p>Loading leaderboard...</p>
         </div>
       </div>

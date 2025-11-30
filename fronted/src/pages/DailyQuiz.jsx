@@ -630,7 +630,7 @@ const DailyQuiz = ({ user }) => {
           fontSize: '1.2rem'
         }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+            <div className="spinner" style={{ marginBottom: '1rem' }}></div>
             <div>Loading questions...</div>
           </div>
         </div>

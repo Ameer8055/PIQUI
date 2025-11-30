@@ -318,7 +318,7 @@ ${question.explanation ? `Current Explanation: ${question.explanation}\n\n` : ''
     return (
       <div className="quiz-browser-page">
         <div className="loading-container">
-          <div className="spinner">Loading questions...</div>
+          <div className="spinner"></div>
         </div>
       </div>
     )

@@ -235,7 +235,7 @@
   width: clamp(60px, 8vw, 100px);
   height: auto;
   mix-blend-mode: multiply;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 8px 16px rgb(0, 0, 0));
   flex-shrink: 0;
   display: none; /* Hidden on desktop, shown on mobile */
 }
@@ -245,16 +245,16 @@
   font-weight: 800;
   line-height: 1.1;
   margin: 0;
-  color: #030303;
+  color: #000000;
   letter-spacing: -0.02em;
   flex: 1;
 }
 
 .hero-title .highlight {
-  color: #fbbf24;
+  color: #000000;
   display: block;
   margin-top: 0.5rem;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -325,7 +325,7 @@
 .cta-secondary {
   background: transparent;
   color: #000000;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.829);
   padding: clamp(0.875rem, 2.5vw, 1.125rem) clamp(2rem, 5vw, 2.75rem);
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
   font-weight: 600;
@@ -344,7 +344,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(8, 243, 208, 0.852), transparent);
   transition: left 0.5s ease;
 }
 
@@ -353,7 +353,7 @@
 }
 
 .cta-secondary:hover {
-  background: rgba(14, 14, 14, 0.1);
+  background: rgb(0, 238, 255);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-3px);
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
@@ -685,7 +685,7 @@
 
   .hero-title-icon {
     display: block;
-    width: clamp(70px, 10vw, 70px);
+    width: clamp(100px, 10vw, 70px);
     order: 2; /* Moves it to the right */
     margin-right: 80px;
   }

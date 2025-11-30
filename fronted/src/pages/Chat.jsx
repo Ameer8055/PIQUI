@@ -653,7 +653,7 @@ const Chat = ({ user }) => {
                 >
                   {sendingMessage ? (
                     <>
-                      <span className="sending-spinner">⏳</span> Sending...
+                      <span className="sending-spinner"></span> Sending...
                     </>
                   ) : (
                     '📤 Send Message'

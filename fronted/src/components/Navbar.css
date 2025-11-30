@@ -21,6 +21,8 @@
   position: relative;
 }
 
+
+
 /* Brand/Logo */
 .nav-brand {
   display: flex;
@@ -172,12 +174,12 @@
   right: 0;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px rgb(255, 255, 255);
   min-width: 240px;
   padding: 0.5rem 0;
   z-index: 1002;
   animation: slideDown 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgb(255, 255, 255);
 }
 
 @keyframes slideDown {
@@ -316,7 +318,7 @@
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  background: #ffffff;
   border: 1px solid #ffffff;
   border-radius: 12px;
   cursor: pointer;
@@ -330,13 +332,13 @@
 }
 
 .mobile-menu-toggle:hover {
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #f9fafb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mobile-menu-toggle:active {
   transform: scale(0.95);
-  background: #ffffff;
+  background: #f3f4f6;
 }
 
 .mobile-menu-toggle:focus-visible {
@@ -344,34 +346,39 @@
   outline-offset: 2px;
 }
 
-.dots-menu {
+.hamburger-menu {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   cursor: pointer;
-  padding: 8px;
+  padding: 0;
+  width: 24px;
+  height: 18px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.dots-menu span {
-  width: 4px;
-  height: 4px;
-  background-color: #000000;
-  border-radius: 50%;
+.hamburger-menu span {
+  width: 100%;
+  height: 3px;
+  background-color: #1f2937;
+  border-radius: 2px;
   transition: all 0.3s ease;
+  display: block;
+  min-height: 3px;
 }
 
-.dots-menu.open span:nth-child(1) {
-  transform: translateX(8px);
+.hamburger-menu.open span:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
 }
 
-.dots-menu.open span:nth-child(2) {
+.hamburger-menu.open span:nth-child(2) {
   opacity: 0;
   transform: scaleX(0);
-  width: 0;
 }
 
-.dots-menu.open span:nth-child(3) {
-  transform: translateX(-8px);
+.hamburger-menu.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
 }
 
 /* Mobile Menu Overlay */
@@ -406,7 +413,7 @@
   max-width: 320px;
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height for mobile */
-  background: white;
+  background: rgb(255, 255, 255);
   box-shadow: -4px 0 25px rgba(0, 0, 0, 0.25);
   z-index: 1003;
   transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -641,11 +648,7 @@
     padding: 0.75rem 1rem;
     gap: 0.5rem;
     flex-wrap: nowrap;
-  }
-
-  .nav-right {
-    gap: 0.5rem;
-    flex-shrink: 0;
+    justify-content: space-between;
   }
 
   /* Hide desktop navigation completely */
@@ -665,6 +668,19 @@
   .mobile-menu-toggle {
     display: flex !important;
     visibility: visible !important;
+  }
+
+  /* Menu icon (hamburger) appears on the left */
+  .nav-right {
+    gap: 0.5rem;
+    flex-shrink: 0;
+    order: -1; /* Menu icon appears first (left) */
+  }
+
+  /* App icon (logo) moves to right */
+  .nav-brand {
+    order: 1; /* App icon appears second (right) */
+    margin-left: auto;
   }
 
   .brand-icon {
@@ -838,5 +854,107 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mobile Menu - Left Side */
+@media (max-width: 768px) {
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Changed from right: -100% */
+    right: auto; /* Reset right positioning */
+    width: 85%;
+    max-width: 320px;
+    height: 100vh;
+    height: 100dvh;
+    background: white;
+    box-shadow: 4px 0 25px rgb(93, 92, 92); /* Changed shadow direction */
+    z-index: 1003;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* Changed to left */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    will-change: left;
+  }
+
+  .mobile-menu.open {
+    left: 0; /* Changed from right: 0 */
+    right: auto;
+  }
+
+  /* Update the active indicator position */
+  .mobile-nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0; /* Keep left for the indicator */
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Adjust container layout for left menu */
+  .nav-container {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  /* Menu toggle button on the left */
+  .nav-right {
+    gap: 0.5rem;
+    flex-shrink: 0;
+    order: -1; /* Keep menu icon on left */
+  }
+
+  /* Brand/logo on the right */
+  .nav-brand {
+    order: 1;
+    margin-left: auto;
+  }
+
+  /* Hide desktop navigation */
+  .desktop-nav,
+  .nav-links.desktop-nav {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Hide desktop profile */
+  .desktop-profile {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Show mobile menu toggle */
+  .mobile-menu-toggle {
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
+/* Tablet adjustments for left menu */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .mobile-menu {
+    width: 75%;
+    max-width: 380px;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+  .mobile-menu {
+    width: 90%;
+    max-width: 280px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 360px) {
+  .mobile-menu {
+    width: 95%;
   }
 }
