@@ -78,6 +78,7 @@ const sharedPDFRoutes = require('./Routes/sharedPDFRoutes');
 const typedNoteRoutes = require('./Routes/typedNoteRoutes');
 const quizFromPDFRoutes = require('./Routes/quizFromPDFRoutes');
 const developerMessageRoutes = require('./Routes/developerMessageRoutes');
+const contributorRoutes = require('./Routes/contributorRoutes');
 const path = require('path');
 
 app.use('/api/auth', authRoutes);
@@ -88,6 +89,7 @@ app.use('/api/shared-pdfs', sharedPDFRoutes);
 app.use('/api/typed-notes', typedNoteRoutes);
 app.use('/api/quiz-from-pdf', quizFromPDFRoutes);
 app.use('/api/developer-messages', developerMessageRoutes);
+app.use('/api/contributor', contributorRoutes);
 
 // Serve static files from Public directory
 app.use('/uploads', express.static(path.join(__dirname, 'Public', 'uploads')));

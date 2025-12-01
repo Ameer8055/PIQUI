@@ -373,6 +373,17 @@
   font-weight: 500;
 }
 
+.contributor-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 .options-grid {
   display: grid;
   gap: 1rem;

@@ -230,7 +230,17 @@ const ManageQuestions = ({ user }) => {
       let questions = [];
 
       if (bulkImportFile.name.endsWith('.json')) {
-        questions = JSON.parse(fileContent);
+        const parsed = JSON.parse(fileContent);
+        // Handle different JSON formats
+        if (Array.isArray(parsed)) {
+          questions = parsed;
+        } else if (parsed.questions && Array.isArray(parsed.questions)) {
+          questions = parsed.questions;
+        } else if (parsed.data && Array.isArray(parsed.data)) {
+          questions = parsed.data;
+        } else {
+          throw new Error('JSON file must contain an array of questions or an object with a "questions" or "data" property containing an array');
+        }
       } else if (bulkImportFile.name.endsWith('.csv')) {
         questions = parseCSV(fileContent);
       } else {
@@ -243,7 +253,7 @@ const ManageQuestions = ({ user }) => {
 
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        'http://localhost:5000/api/admin/questions/bulk-import',
+        `${API_BASE_URL}/admin/questions/bulk-import`,
         { questions },
         {
           headers: {

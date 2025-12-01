@@ -119,6 +119,10 @@ const Leaderboard = ({ user }) => {
               <h3>{currentUser.name}</h3>
               <div className="user-stats">
                 <span className="stat-item">
+                  <span className="stat-icon">⭐</span>
+                  {currentUser.points || 0} Points
+                </span>
+                <span className="stat-item">
                   <span className="stat-icon">🏆</span>
                   {currentUser.battlesWon || 0} Wins
                 </span>
@@ -126,16 +130,12 @@ const Leaderboard = ({ user }) => {
                   <span className="stat-icon">⚔️</span>
                   {currentUser.totalBattles || 0} Battles
                 </span>
-                <span className="stat-item">
-                  <span className="stat-icon">📊</span>
-                  {Math.round(currentUser.averageScore || 0)}% Avg
-                </span>
               </div>
             </div>
           </div>
           <div className="user-xp">
-            <span className="xp-value">{currentUser.battlesWon || 0}</span>
-            <span className="xp-label">Battle Wins</span>
+            <span className="xp-value">{currentUser.points || 0}</span>
+            <span className="xp-label">Points</span>
           </div>
         </div>
       )}
@@ -148,19 +148,19 @@ const Leaderboard = ({ user }) => {
               <div className="podium-avatar">{leaderboard[1]?.avatar || '👤'}</div>
               <div className="podium-rank">🥈</div>
               <div className="podium-name">{leaderboard[1]?.name}</div>
-              <div className="podium-xp">{leaderboard[1]?.battlesWon || 0} Wins</div>
+              <div className="podium-xp">{leaderboard[1]?.points || 0} Points</div>
             </div>
             <div className="podium-item first">
               <div className="podium-avatar">{leaderboard[0]?.avatar || '👤'}</div>
               <div className="podium-rank">🥇</div>
               <div className="podium-name">{leaderboard[0]?.name}</div>
-              <div className="podium-xp">{leaderboard[0]?.battlesWon || 0} Wins</div>
+              <div className="podium-xp">{leaderboard[0]?.points || 0} Points</div>
             </div>
             <div className="podium-item third">
               <div className="podium-avatar">{leaderboard[2]?.avatar || '👤'}</div>
               <div className="podium-rank">🥉</div>
               <div className="podium-name">{leaderboard[2]?.name}</div>
-              <div className="podium-xp">{leaderboard[2]?.battlesWon || 0} Wins</div>
+              <div className="podium-xp">{leaderboard[2]?.points || 0} Points</div>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@ const Leaderboard = ({ user }) => {
                   </div>
                 </div>
                 <div className="level-column">
-                  <span className="level-badge">⚔️ {entry.totalBattles || 0} Battles</span>
+                  <span className="level-badge">⭐ {entry.points || 0} Points</span>
                 </div>
                 <div className="stats-column">
                   <div className="stat-small">
@@ -199,14 +199,14 @@ const Leaderboard = ({ user }) => {
                     <span className="stat-value-small">{entry.battlesWon || 0}</span>
                   </div>
                   <div className="stat-small">
-                    <span className="stat-label-small">Losses</span>
-                    <span className="stat-value-small">{entry.battlesLost || 0}</span>
+                    <span className="stat-label-small">Quizzes</span>
+                    <span className="stat-value-small">{entry.totalQuizzes || 0}</span>
                   </div>
                 </div>
                 <div className="xp-column">
                   <div className="xp-display">
-                    <span className="xp-value-large">{entry.battlesWon || 0}</span>
-                    <span className="xp-label-small">Wins</span>
+                    <span className="xp-value-large">{entry.points || 0}</span>
+                    <span className="xp-label-small">Points</span>
                   </div>
                 </div>
               </div>

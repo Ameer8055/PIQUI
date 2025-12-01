@@ -136,7 +136,7 @@ const Dashboard = ({ user }) => {
     }
   ]
 
-  const streak = userProfile?.stats?.currentStreak || 0
+  const streak = stats?.streak || userProfile?.stats?.currentStreak || 0
 
   return (
     <div className="dashboard">
@@ -165,11 +165,16 @@ const Dashboard = ({ user }) => {
           <h3>🎯 Today's Goal</h3>
           <div className="goal-progress">
             <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${Math.min((stats?.overall?.totalQuizzes || 0) >= 1 ? 100 : 0, 100)}%` }}></div>
+              <div className="progress-fill" style={{ width: `${Math.min(((stats?.dailyGoal?.completed || 0) / (stats?.dailyGoal?.goal || 10)) * 100, 100)}%` }}></div>
             </div>
-            <span>{stats?.overall?.totalQuizzes >= 1 ? '100%' : '0%'} completed</span>
+            <span>{stats?.dailyGoal ? `${stats.dailyGoal.completed}/${stats.dailyGoal.goal} questions` : '0/10 questions'}</span>
           </div>
-          <p>Complete at least 1 quiz to maintain your streak! {streak > 0 && `🔥 ${streak} day streak!`}</p>
+          <div className="goal-info">
+            <p>Complete {stats?.dailyGoal?.goal || 10} questions today to earn bonus points!</p>
+            {stats?.dailyGoal?.achieved && <span className="goal-badge">✅ Goal Achieved!</span>}
+            {stats?.streak > 0 && <span className="streak-badge">🔥 {stats.streak} day streak!</span>}
+            {stats?.points !== undefined && <span className="points-badge">⭐ {stats.points} points</span>}
+          </div>
         </div>
       </section>
 

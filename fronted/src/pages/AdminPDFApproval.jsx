@@ -25,6 +25,14 @@ const AdminPDFApproval = ({ user }) => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [originalPdfUrl, setOriginalPdfUrl] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFormData, setUploadFormData] = useState({
+    title: '',
+    subject: '',
+    description: ''
+  });
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchPDFs();
@@ -158,6 +166,51 @@ const AdminPDFApproval = ({ user }) => {
     }
   };
 
+  const handleAdminUpload = async (e) => {
+    e.preventDefault();
+    if (!uploadFile) {
+      toast.warning('Please select a PDF file');
+      return;
+    }
+    if (!uploadFormData.title.trim()) {
+      toast.warning('Please enter a title');
+      return;
+    }
+    if (!uploadFormData.subject || uploadFormData.subject === '') {
+      toast.warning('Please select a subject');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const formData = new FormData();
+      formData.append('pdf', uploadFile);
+      formData.append('title', uploadFormData.title);
+      formData.append('subject', uploadFormData.subject);
+      formData.append('description', uploadFormData.description || '');
+
+      await axios.post(`${API_BASE_URL}/admin/pdfs/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      toast.success('PDF uploaded and approved successfully!');
+      setShowUploadModal(false);
+      setUploadFile(null);
+      setUploadFormData({ title: '', subject: '', description: '' });
+      fetchPDFs();
+      fetchStats();
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      toast.error('Error uploading PDF: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="admin-pdf-approval">
       <div className="page-header">
@@ -174,6 +227,9 @@ const AdminPDFApproval = ({ user }) => {
               }}
             />
           </div>
+          <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
+            + Upload PDF
+          </button>
         </div>
       </div>
 
@@ -457,6 +513,103 @@ const AdminPDFApproval = ({ user }) => {
                 {processingId === selectedPdf?._id ? 'Processing...' : 'Confirm Rejection'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={() => {
+          if (!uploading) {
+            setShowUploadModal(false);
+            setUploadFile(null);
+            setUploadFormData({ title: '', subject: '', description: '' });
+          }
+        }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Upload Community PDF</h2>
+              <button 
+                className="close-btn" 
+                onClick={() => {
+                  if (!uploading) {
+                    setShowUploadModal(false);
+                    setUploadFile(null);
+                    setUploadFormData({ title: '', subject: '', description: '' });
+                  }
+                }} 
+                disabled={uploading}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleAdminUpload}>
+              <div className="form-group">
+                <label>Title *</label>
+                <input
+                  type="text"
+                  value={uploadFormData.title}
+                  onChange={(e) => setUploadFormData({ ...uploadFormData, title: e.target.value })}
+                  required
+                  disabled={uploading}
+                />
+              </div>
+              <div className="form-group">
+                <label>subject *</label>
+                <select
+                  value={uploadFormData.subject}
+                  onChange={(e) => setUploadFormData({ ...uploadFormData, subject: e.target.value })}
+                  required
+                  disabled={uploading}
+                >
+                  <option value="">Select a subject</option>
+                  <option value="General Knowledge">GK</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="English">English</option>
+                  <option value="current-affairs">Current Affairs</option>
+                  <option value="Constitution">Constitution</option>
+                  <option value="Science">Science</option>
+                  <option value="Malayalam">Malayalam</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={uploadFormData.description}
+                  onChange={(e) => setUploadFormData({ ...uploadFormData, description: e.target.value })}
+                  rows="3"
+                  disabled={uploading}
+                />
+              </div>
+              <div className="form-group">
+                <label>PDF File *</label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setUploadFile(e.target.files[0])}
+                  required
+                  disabled={uploading}
+                />
+                {uploadFile && <p className="file-name">Selected: {uploadFile.name}</p>}
+              </div>
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setUploadFile(null);
+                    setUploadFormData({ title: '', subject: '', description: '' });
+                  }} 
+                  disabled={uploading}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={uploading}>
+                  {uploading ? 'Uploading...' : 'Upload & Approve'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

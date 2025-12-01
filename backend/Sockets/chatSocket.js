@@ -2,6 +2,36 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/User');
 const ChatMessage = require('../Models/ChatMessage');
 
+// Helper function to format message time
+function formatMessageTime(date) {
+  const now = new Date();
+  const msgDate = new Date(date);
+  const diffMs = now - msgDate;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  // Same day - show time only
+  if (diffDays === 0) {
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+  }
+
+  // Yesterday
+  if (diffDays === 1) {
+    return `Yesterday ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  // Within a week - show day and time
+  if (diffDays < 7) {
+    return `${msgDate.toLocaleDateString([], { weekday: 'short' })} ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  // Older - show date and time
+  return `${msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 const BANNED_WORDS = [
    'attack'
 ];
@@ -134,10 +164,7 @@ module.exports = function registerChatSocket(io) {
             avatar: msg.user.avatar || msg.user.name?.charAt(0)?.toUpperCase() || 'U'
           },
           message: msg.message,
-          timestamp: new Date(msg.createdAt).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
+          timestamp: formatMessageTime(msg.createdAt),
           createdAt: msg.createdAt,
           isImportant: msg.isImportant || false,
           replyTo: msg.replyTo ? {

@@ -30,10 +30,7 @@ router.get('/history', auth, async (req, res) => {
         avatar: msg.user.avatar || msg.user.name?.charAt(0)?.toUpperCase() || 'U'
       },
       message: msg.message,
-      timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      timestamp: formatMessageTime(msg.createdAt),
       createdAt: msg.createdAt,
       isImportant: msg.isImportant || false,
       replyTo: msg.replyTo ? {

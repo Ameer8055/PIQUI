@@ -120,6 +120,39 @@
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  transition: width 0.3s ease;
+}
+
+.goal-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.goal-badge,
+.streak-badge,
+.points-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.goal-badge {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.streak-badge {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.points-badge {
+  background: #dbeafe;
+  color: #1e40af;
   border-radius: 10px;
   transition: width 0.5s ease;
 }

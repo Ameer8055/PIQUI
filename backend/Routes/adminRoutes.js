@@ -9,8 +9,37 @@ const QuizSession = require('../Models/QuizSession'); // You'll need to create t
 const SharedPDF = require('../Models/SharedPDF');
 const DeveloperMessage = require('../Models/DeveloperMessage');
 const ChatMessage = require('../Models/ChatMessage');
-const { deleteFromCloudinary } = require('../Middlewares/uploadMiddleware');
+const { deleteFromCloudinary, upload, uploadToCloudinary } = require('../Middlewares/uploadMiddleware');
 
+// Helper function to format message time
+function formatMessageTime(date) {
+  const now = new Date();
+  const msgDate = new Date(date);
+  const diffMs = now - msgDate;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  // Same day - show time only
+  if (diffDays === 0) {
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+  }
+
+  // Yesterday
+  if (diffDays === 1) {
+    return `Yesterday ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  // Within a week - show day and time
+  if (diffDays < 7) {
+    return `${msgDate.toLocaleDateString([], { weekday: 'short' })} ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  // Older - show date and time
+  return `${msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
 
 // Get admin dashboard stats - TEMPORARILY REMOVE adminAuth
 router.get('/dashboard', async (req, res) => {
@@ -56,6 +85,74 @@ router.get('/questions', async (req, res) => {
     });}});
 
 // Add new question - TEMPORARILY REMOVE adminAuth
+// Approve/Reject contributor question
+router.post('/questions/:id/approve', async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) {
+      return res.status(404).json({ status: 'error', message: 'Question not found' });
+    }
+
+    question.status = 'approved';
+    question.isActive = true;
+    question.reviewedBy = req.user?._id || null;
+    question.reviewedAt = new Date();
+
+    await question.save();
+
+    res.json({
+      status: 'success',
+      message: 'Question approved',
+      data: question
+    });
+  } catch (error) {
+    console.error('Error approving question:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+router.post('/questions/:id/reject', async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) {
+      return res.status(404).json({ status: 'error', message: 'Question not found' });
+    }
+
+    question.status = 'rejected';
+    question.isActive = false;
+    question.reviewedBy = req.user?._id || null;
+    question.reviewedAt = new Date();
+
+    await question.save();
+
+    res.json({
+      status: 'success',
+      message: 'Question rejected',
+      data: question
+    });
+  } catch (error) {
+    console.error('Error rejecting question:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Get pending contributor questions
+router.get('/questions/pending', async (req, res) => {
+  try {
+    const questions = await Question.find({ status: 'pending' })
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      status: 'success',
+      data: questions
+    });
+  } catch (error) {
+    console.error('Error fetching pending questions:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
 router.post('/questions', async (req, res) => {
   try {
     const question = new Question({
@@ -192,7 +289,8 @@ router.post('/questions/bulk-import', async (req, res) => {
         explanation: q.explanation ? q.explanation.trim() : '',
         tags: q.tags ? (Array.isArray(q.tags) ? q.tags : q.tags.split(',').map(t => t.trim()).filter(t => t)) : [],
         isActive: q.isActive !== undefined ? q.isActive : true,
-        createdBy: createdBy || req.user?._id || '65d8a1b5c8e9f4a1b2c3d4e5'
+        status: q.status || 'approved', // Default to approved for admin imports
+        createdBy: createdBy || req.user?._id || null
       };
 
       validatedQuestions.push(validatedQuestion);
@@ -384,15 +482,33 @@ router.get('/analytics', async (req, res) => {
         startDate.setDate(now.getDate() - 7);
     }
 
+    // Calculate previous period for comparison
+    const previousStartDate = new Date(startDate);
+    const periodDays = range === '7days' ? 7 : range === '30days' ? 30 : 90;
+    previousStartDate.setDate(previousStartDate.getDate() - periodDays);
+    const previousEndDate = new Date(startDate);
+
     // User growth
     const userGrowth = await User.countDocuments({
       createdAt: { $gte: startDate }
     });
+    const previousUserGrowth = await User.countDocuments({
+      createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+    });
+    const userGrowthChange = previousUserGrowth > 0 
+      ? Math.round(((userGrowth - previousUserGrowth) / previousUserGrowth) * 100)
+      : userGrowth > 0 ? 100 : 0;
 
-    // Total quizzes taken (you'll need QuizSession model)
+    // Total quizzes taken
     const totalQuizzes = await QuizSession.countDocuments({
       createdAt: { $gte: startDate }
     });
+    const previousTotalQuizzes = await QuizSession.countDocuments({
+      createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+    });
+    const quizzesChange = previousTotalQuizzes > 0
+      ? Math.round(((totalQuizzes - previousTotalQuizzes) / previousTotalQuizzes) * 100)
+      : totalQuizzes > 0 ? 100 : 0;
 
     // Average score
     const avgScoreResult = await QuizSession.aggregate([
@@ -410,6 +526,25 @@ router.get('/analytics', async (req, res) => {
       }
     ]);
     const avgScore = avgScoreResult.length > 0 ? Math.round(avgScoreResult[0].avgScore) : 0;
+    
+    const previousAvgScoreResult = await QuizSession.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: previousStartDate, $lt: previousEndDate },
+          completed: true
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          avgScore: { $avg: '$score' }
+        }
+      }
+    ]);
+    const previousAvgScore = previousAvgScoreResult.length > 0 ? Math.round(previousAvgScoreResult[0].avgScore) : 0;
+    const avgScoreChange = previousAvgScore > 0
+      ? Math.round(((avgScore - previousAvgScore) / previousAvgScore) * 100)
+      : avgScore > 0 ? 100 : 0;
 
     // Average time per quiz
     const avgTimeResult = await QuizSession.aggregate([
@@ -427,6 +562,25 @@ router.get('/analytics', async (req, res) => {
       }
     ]);
     const avgTime = avgTimeResult.length > 0 ? Math.round(avgTimeResult[0].avgTime / 60) : 0; // Convert to minutes
+    
+    const previousAvgTimeResult = await QuizSession.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: previousStartDate, $lt: previousEndDate },
+          completed: true
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          avgTime: { $avg: '$timeSpent' }
+        }
+      }
+    ]);
+    const previousAvgTime = previousAvgTimeResult.length > 0 ? Math.round(previousAvgTimeResult[0].avgTime / 60) : 0;
+    const avgTimeChange = previousAvgTime > 0
+      ? Math.round(((avgTime - previousAvgTime) / previousAvgTime) * 100)
+      : avgTime > 0 ? 100 : 0;
 
     // Category performance
     const categoryPerformance = await QuizSession.aggregate([
@@ -488,35 +642,49 @@ router.get('/analytics', async (req, res) => {
       createdAt: { $gte: new Date(now.setDate(now.getDate() - 30)) }
     }).then(users => users.length);
 
-    // Recent activity (mock data for now)
-    const recentActivity = [
-      {
-        id: 1,
-        userName: 'John Doe',
-        action: 'completed a quiz on General Knowledge',
-        time: '2 hours ago'
-      },
-      {
-        id: 2,
-        userName: 'Jane Smith',
-        action: 'achieved level 5',
-        time: '4 hours ago'
-      },
-      {
-        id: 3,
-        userName: 'Mike Johnson',
-        action: 'shared study notes',
-        time: '6 hours ago'
+    // Recent activity - get from actual data
+    const recentQuizzes = await QuizSession.find({
+      createdAt: { $gte: startDate },
+      completed: true
+    })
+      .populate('user', 'name')
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const recentActivity = recentQuizzes.map((quiz, index) => {
+      const timeDiff = now - new Date(quiz.createdAt);
+      const hoursAgo = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutesAgo = Math.floor(timeDiff / (1000 * 60));
+      
+      let timeStr = '';
+      if (hoursAgo > 0) {
+        timeStr = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
+      } else if (minutesAgo > 0) {
+        timeStr = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
+      } else {
+        timeStr = 'Just now';
       }
-    ];
+
+      return {
+        id: quiz._id.toString(),
+        userName: quiz.user?.name || 'Unknown User',
+        action: `completed a quiz with ${Math.round(quiz.score || 0)}% score`,
+        time: timeStr
+      };
+    });
 
     res.json({
       status: 'success',
       data: {
         userGrowth,
+        userGrowthChange,
         totalQuizzes,
+        quizzesChange,
         avgScore,
+        avgScoreChange,
         avgTime,
+        avgTimeChange,
         categoryPerformance,
         dailyActiveUsers,
         weeklyActiveUsers,
@@ -949,6 +1117,56 @@ router.delete('/developer-messages/:messageId', async (req, res) => {
   }
 });
 
+// Admin upload PDF (auto-approved)
+router.post('/pdfs/upload', auth, upload.single('pdf'), async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ status: 'error', message: 'Admin access required' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ status: 'error', message: 'PDF file is required' });
+    }
+
+    const { title, subject, description } = req.body;
+
+    if (!title || !subject) {
+      return res.status(400).json({ status: 'error', message: 'Title and subject are required' });
+    }
+
+    // Upload to Cloudinary
+    const cloudinaryResult = await uploadToCloudinary(req.file.buffer, 'shared-pdfs', req.file.mimetype);
+
+    const sharedPDF = new SharedPDF({
+      title,
+      fileName: req.file.originalname,
+      filePath: cloudinaryResult.secure_url,
+      cloudinaryPublicId: cloudinaryResult.public_id,
+      cloudinaryUrl: cloudinaryResult.secure_url,
+      fileSize: req.file.size,
+      subject,
+      description: description || '',
+      uploadedBy: req.user._id,
+      uploaderName: req.user.name,
+      isApproved: true, // Auto-approve admin uploads
+      approvedBy: req.user._id,
+      approvedAt: new Date()
+    });
+
+    await sharedPDF.save();
+    await sharedPDF.populate('uploadedBy', 'name avatar');
+
+    res.status(201).json({
+      status: 'success',
+      message: 'PDF uploaded and approved successfully',
+      data: sharedPDF
+    });
+  } catch (error) {
+    console.error('Error uploading PDF:', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Error uploading PDF' });
+  }
+});
+
 // Admin delete PDF (can delete any PDF, even after approval)
 router.delete('/pdfs/:pdfId', async (req, res) => {
   try {
@@ -1031,10 +1249,7 @@ router.get('/chat/messages', auth, async (req, res) => {
         avatar: msg.user.avatar || msg.user.name?.charAt(0)?.toUpperCase() || 'U'
       },
       message: msg.message,
-      timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      timestamp: formatMessageTime(msg.createdAt),
       date: new Date(msg.createdAt).toLocaleDateString(),
       createdAt: msg.createdAt,
       isDeleted: msg.isDeleted,

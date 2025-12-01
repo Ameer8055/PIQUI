@@ -43,8 +43,7 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password: password,  // Just the plain password
-      phone: phone || '',
-      pscStream: pscStream || ''
+      phone: phone || ''
     });
 
     console.log('[Register] Saving user to database...');

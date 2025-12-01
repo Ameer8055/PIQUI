@@ -38,7 +38,8 @@ const sharedPDFSchema = new mongoose.Schema({
       'Constitution',
       'Reasoning',
       'Computer',
-      'Current Affairs'
+      'Current Affairs',
+      'Science'
     ]
   },
   uploadedBy: {

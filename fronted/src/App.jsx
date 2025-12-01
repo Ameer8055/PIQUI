@@ -26,6 +26,7 @@ import ProgressTracker from "./pages/ProgressTracker";
 import ProgressTrackerRedirect from "./components/ProgressTrackerRedirect";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
+import ContributorDashboard from "./pages/ContributorDashboard";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -256,6 +257,16 @@ function App() {
                   <AdminLayout user={user}>
                     <AdminDashboard user={user} />
                   </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Contributor Routes */}
+            <Route
+              path="/contributor"
+              element={
+                <ProtectedRoute user={user}>
+                  <ContributorDashboard user={user} />
                 </ProtectedRoute>
               }
             />

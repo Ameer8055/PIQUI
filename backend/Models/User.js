@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema({
   // Role and Status
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'contributor'],
     default: 'user'
   },
   isActive: {
@@ -286,8 +286,22 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    subjectsPracticed: [String]
+    subjectsPracticed: [String],
+    pointsEarned: {
+      type: Number,
+      default: 0
+    },
+    dailyGoal: {
+      type: Number,
+      default: 10
+    }
   }],
+
+  // Points System
+  points: {
+    type: Number,
+    default: 0
+  },
 
   // Preferences and Settings
   preferences: {
@@ -501,13 +515,19 @@ userSchema.methods.updateBattleStats = function(isWinner, isTie = false, pointsE
   if (isTie) {
     this.battleStats.battlesTied += 1;
     this.battleStats.winStreak = 0;
+    // Award 25 points for tie
+    this.points = (this.points || 0) + 25;
   } else if (isWinner) {
     this.battleStats.battlesWon += 1;
     this.battleStats.winStreak += 1;
     this.battleStats.bestWinStreak = Math.max(this.battleStats.bestWinStreak, this.battleStats.winStreak);
+    // Award 100 points for win
+    this.points = (this.points || 0) + 100;
   } else {
     this.battleStats.battlesLost += 1;
     this.battleStats.winStreak = 0;
+    // Award 10 points for participation
+    this.points = (this.points || 0) + 10;
   }
   
   this.battleStats.totalBattlePoints += pointsEarned;

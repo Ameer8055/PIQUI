@@ -12,7 +12,13 @@ const ProtectedRoute = ({ user, children, requireAdmin = false }) => {
     if (user.role !== 'admin') {
       return <Navigate to="/dashboard" replace />;
     }
-    
+  }
+
+  // Check for contributor routes
+  if (location.pathname.startsWith('/contributor')) {
+    if (user.role !== 'contributor' && user.role !== 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   // If user is admin but trying to access user dashboard from admin route

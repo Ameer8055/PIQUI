@@ -415,9 +415,10 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #aaa;
-  font-size: 0.7rem;
+  color: #e0e0e0;
+  font-size: 0.75rem;
   justify-content: flex-end;
+  font-weight: 400;
 }
 
 .read-status {

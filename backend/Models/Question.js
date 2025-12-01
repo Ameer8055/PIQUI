@@ -38,9 +38,23 @@ if (mongoose.models.Question) {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
+    contributorName: {
+      type: String,
+      default: ''
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    reviewedAt: Date,
     isActive: {
       type: Boolean,
-      default: true
+      default: false // Questions need approval before being active
     }
   }, {
     timestamps: true

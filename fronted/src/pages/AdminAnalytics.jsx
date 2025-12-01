@@ -22,59 +22,12 @@ const AdminAnalytics = ({ user }) => {
       setAnalytics(response.data.data);
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      // For demo purposes, use mock data if API fails
-      if (error.response?.status === 404) {
-        setAnalytics(generateMockAnalytics());
-      }
+      setError('Failed to load analytics data');
     } finally {
       setLoading(false);
     }
   };
 
-  // Mock data generator for testing
-  const generateMockAnalytics = () => {
-    return {
-      userGrowth: 15,
-      totalQuizzes: 128,
-      avgScore: 72,
-      avgTime: 8,
-      categoryPerformance: [
-        { name: 'general-knowledge', score: 78, attempts: 45, avgTime: 7.2 },
-        { name: 'mathematics', score: 65, attempts: 32, avgTime: 9.8 },
-        { name: 'english', score: 82, attempts: 28, avgTime: 6.5 },
-        { name: 'current-affairs', score: 71, attempts: 23, avgTime: 8.3 }
-      ],
-      dailyActiveUsers: 24,
-      weeklyActiveUsers: 89,
-      monthlyActiveUsers: 156,
-      recentActivity: [
-        {
-          id: 1,
-          userName: 'John Doe',
-          action: 'completed a quiz on General Knowledge',
-          time: '2 hours ago'
-        },
-        {
-          id: 2,
-          userName: 'Jane Smith',
-          action: 'achieved level 5',
-          time: '4 hours ago'
-        },
-        {
-          id: 3,
-          userName: 'Mike Johnson',
-          action: 'scored 90% in Mathematics',
-          time: '6 hours ago'
-        },
-        {
-          id: 4,
-          userName: 'Sarah Wilson',
-          action: 'completed daily streak (7 days)',
-          time: '8 hours ago'
-        }
-      ]
-    };
-  };
 
   if (loading) {
     return <div className="loading">Loading analytics...</div>;
@@ -103,7 +56,11 @@ const AdminAnalytics = ({ user }) => {
           <div className="metric-info">
             <h3>{analytics?.userGrowth || 0}</h3>
             <p>New Users</p>
-            <span className="metric-change positive">+12%</span>
+            {analytics?.userGrowthChange !== undefined && (
+              <span className={`metric-change ${analytics.userGrowthChange >= 0 ? 'positive' : 'negative'}`}>
+                {analytics.userGrowthChange >= 0 ? '+' : ''}{analytics.userGrowthChange}%
+              </span>
+            )}
           </div>
         </div>
 
@@ -112,7 +69,11 @@ const AdminAnalytics = ({ user }) => {
           <div className="metric-info">
             <h3>{analytics?.totalQuizzes || 0}</h3>
             <p>Quizzes Taken</p>
-            <span className="metric-change positive">+8%</span>
+            {analytics?.quizzesChange !== undefined && (
+              <span className={`metric-change ${analytics.quizzesChange >= 0 ? 'positive' : 'negative'}`}>
+                {analytics.quizzesChange >= 0 ? '+' : ''}{analytics.quizzesChange}%
+              </span>
+            )}
           </div>
         </div>
 
@@ -121,7 +82,11 @@ const AdminAnalytics = ({ user }) => {
           <div className="metric-info">
             <h3>{analytics?.avgScore || 0}%</h3>
             <p>Avg. Score</p>
-            <span className="metric-change positive">+5%</span>
+            {analytics?.avgScoreChange !== undefined && (
+              <span className={`metric-change ${analytics.avgScoreChange >= 0 ? 'positive' : 'negative'}`}>
+                {analytics.avgScoreChange >= 0 ? '+' : ''}{analytics.avgScoreChange}%
+              </span>
+            )}
           </div>
         </div>
 
@@ -130,7 +95,11 @@ const AdminAnalytics = ({ user }) => {
           <div className="metric-info">
             <h3>{analytics?.avgTime || 0}m</h3>
             <p>Avg. Time</p>
-            <span className="metric-change negative">-2%</span>
+            {analytics?.avgTimeChange !== undefined && (
+              <span className={`metric-change ${analytics.avgTimeChange >= 0 ? 'positive' : 'negative'}`}>
+                {analytics.avgTimeChange >= 0 ? '+' : ''}{analytics.avgTimeChange}%
+              </span>
+            )}
           </div>
         </div>
       </div>

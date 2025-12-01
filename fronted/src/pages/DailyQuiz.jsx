@@ -678,6 +678,11 @@ const DailyQuiz = ({ user }) => {
           <div className="question-section">
             <div className="question-text">
               {question.question}
+              {question.contributorName && (
+                <div className="contributor-badge">
+                  Contributed by {question.contributorName}
+                </div>
+              )}
             </div>
             
             {/* Options */}

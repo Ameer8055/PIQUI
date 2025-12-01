@@ -13,7 +13,6 @@ const RegistrationModal = ({ onClose, onRegister }) => {
     name: '',
     email: '',
     phone: '',
-    pscStream: '',
     password: '',
     agreeTerms: false
   })
@@ -73,12 +72,6 @@ const RegistrationModal = ({ onClose, onRegister }) => {
         </button>
 
         <div className="modal-body">
-          <div className="modal-visual">
-            <div className="visual-badge">New!</div>
-            <img className="modal-app-logo" src="/viite.png" alt="PIQUI app preview" />
-            <p className="visual-caption">Practice smarter with daily quiz streaks, live battles, and AI-crafted notes.</p>
-          </div>
-
           <div className="modal-form">
             <div className="modal-header">
               <h2>Welcome to PIQUI!</h2>
@@ -92,115 +85,95 @@ const RegistrationModal = ({ onClose, onRegister }) => {
             )}
 
             <form onSubmit={handleSubmit} className="registration-form">
-          <div className="form-group">
-            <label htmlFor="name">Full Name *</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter your full name"
-              required
-              disabled={loading}
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="name">Full Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter your full name"
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email Address *</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-              disabled={loading}
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="email">Email Address *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password *</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-              minLength="6"
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="password">Password *</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  required
+                  disabled={loading}
+                  minLength="6"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number (Optional)</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter your phone number"
-              disabled={loading}
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Enter your phone number"
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="pscStream">Exam Stream (Optional)</label>
-            <select
-              id="pscStream"
-              name="pscStream"
-              value={formData.pscStream}
-              onChange={handleChange}
-              disabled={loading}
-            >
-              <option value="">Select your target stream</option>
-              <option value="ldc">LDC</option>
-              <option value="degree">Degree Level</option>
-              <option value="plus-two">Plus Two Level</option>
-              <option value="tenth">Tenth Level</option>
-              <option value="police">Police</option>
-              <option value="secretariat">Secretariat</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+              <div className="terms-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="agreeTerms"
+                    checked={formData.agreeTerms}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                  />
+                  I agree to the Terms of Service and Privacy Policy
+                </label>
+              </div>
 
-          <div className="terms-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                checked={formData.agreeTerms}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-              I agree to the Terms of Service and Privacy Policy
-            </label>
-          </div>
+              <button 
+                type="submit" 
+                className={`submit-button ${!isFormValid ? 'disabled' : ''}`}
+                disabled={!isFormValid || loading}
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner"></div>
+                    Registering...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
 
-            <button 
-              type="submit" 
-              className={`submit-button ${!isFormValid ? 'disabled' : ''}`}
-              disabled={!isFormValid || loading}
-            >
-              {loading ? (
-                <>
-                  <div className="spinner"></div>
-                  Registering...
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-
-            <p className="login-text">
-              Already have an account? <span className="login-link" onClick={() => navigate('/signin')}>Sign In</span>
-            </p>
-          </form>
+              <p className="login-text">
+                Already have an account? <span className="login-link" onClick={() => navigate('/signin')}>Sign In</span>
+              </p>
+            </form>
           </div>
         </div>
       </div>
