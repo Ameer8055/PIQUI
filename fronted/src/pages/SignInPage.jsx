@@ -62,14 +62,10 @@ const SignInPage = ({ onLogin }) => {
           onLogin(result.user);
         }
         
-        // Redirect based on user role
+        // Redirect based on user role (contributors use normal dashboard with extra section)
         if (result.user.role === 'admin') {
           navigate('/admin');
-          
-        }
-        else if(result.user.role === 'contributor') {
-          navigate('/contributor');
-        }else {
+        } else {
           navigate('/dashboard');
         }
       }

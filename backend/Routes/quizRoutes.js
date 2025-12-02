@@ -459,4 +459,35 @@ const updateUserStats = async (userId, score, totalQuestions, timeSpent) => {
   }
 };
 
+// Get contributor leaderboard (public route)
+router.get('/contributors/leaderboard', auth, async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    const User = require('../Models/User');
+    
+    const contributors = await User.find({ isContributor: true })
+      .select('name avatar contributorPoints')
+      .sort({ contributorPoints: -1 })
+      .limit(parseInt(limit))
+      .lean();
+    
+    const leaderboard = contributors.map((contributor, index) => ({
+      rank: index + 1,
+      name: contributor.name,
+      avatar: contributor.avatar || contributor.name?.charAt(0)?.toUpperCase() || 'U',
+      contributorPoints: contributor.contributorPoints || 0
+    }));
+    
+    res.json({
+      status: 'success',
+      data: {
+        leaderboard
+      }
+    });
+  } catch (error) {
+    console.error('Contributor leaderboard error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
 module.exports = router;

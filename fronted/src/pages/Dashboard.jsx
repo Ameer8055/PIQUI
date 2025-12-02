@@ -144,7 +144,6 @@ const Dashboard = ({ user }) => {
       <header className="dashboard-header">
         <div className="welcome-section">
           <h1>Welcome back, {user?.name}! 👋</h1>
-          <p>Ready to continue your quiz journey?</p>
         </div>
         <div className="user-stats">
           {quickStats.map((stat, index) => (

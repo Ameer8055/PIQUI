@@ -20,7 +20,8 @@ const Navbar = ({ user }) => {
     { path: '/daily-quiz', label: 'Daily Quiz', icon: '📚' },
     { path: '/live-quiz', label: 'Quiz Battle', icon: '⚡' },
     { path: '/notes', label: 'Notes', icon: '📝' },
-    { path: '/chat', label: 'Chat', icon: '💬' }
+    { path: '/chat', label: 'Chat', icon: '💬' },
+    ...(user?.isContributor ? [{ path: '/contributor', label: 'Contribute', icon: '📝' }] : [])
   ]
 
   // Close dropdown when clicking outside

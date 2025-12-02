@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { InstallPrompt } from "./components/InstallPrompt";
 import Navbar from "./components/Navbar";
-import ContributorNavbar from "./components/ContributorNavbar";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import DailyQuiz from "./pages/DailyQuiz";
@@ -76,11 +75,9 @@ function App() {
       <div className="app">
         <InstallPrompt />
 
-        {/* Navbars */}
+        {/* Navbar for all non-admin areas */}
         {user && !window.location.pathname.startsWith("/admin") && (
-          user.role === 'contributor'
-            ? <ContributorNavbar user={user} />
-            : <Navbar user={user} />
+          <Navbar user={user} />
         )}
         {/* REMOVED: AdminNavbar from here */}
 

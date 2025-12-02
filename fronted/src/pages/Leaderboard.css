@@ -1,6 +1,5 @@
 .leaderboard-page {
   min-height: 100vh;
-  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
   margin: 0;
@@ -24,6 +23,37 @@
 .leaderboard-header p {
   font-size: 1.2rem;
   opacity: 0.9;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.leaderboard-tab {
+  padding: 0.75rem 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-tab:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.leaderboard-tab.active {
+  background: white;
+  color: #667eea;
+  border-color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .loading-container {
@@ -60,7 +90,7 @@
   font-weight: 500;
 }
 
-/* Current User Card */
+/* Current User Card - FIXED */
 .current-user-card {
   background: white;
   border-radius: 20px;
@@ -83,6 +113,7 @@
   padding: 1.5rem;
   border-radius: 15px;
   min-width: 100px;
+  flex-shrink: 0;
 }
 
 .rank-number {
@@ -95,6 +126,7 @@
   font-size: 0.9rem;
   opacity: 0.9;
   margin-top: 0.5rem;
+  text-align: center;
 }
 
 .user-info {
@@ -102,6 +134,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  min-width: 0; /* Allow shrinking */
 }
 
 .user-avatar {
@@ -116,11 +149,19 @@
   flex-shrink: 0;
 }
 
+.user-details {
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
+}
+
 .user-details h3 {
   color: #1f2937;
   font-size: 1.5rem;
   margin: 0 0 0.5rem 0;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-stats {
@@ -135,10 +176,12 @@
   gap: 0.5rem;
   color: #6b7280;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .stat-icon {
   font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .user-xp {
@@ -146,6 +189,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  flex-shrink: 0;
+  min-width: 100px;
 }
 
 .xp-value {
@@ -153,6 +198,9 @@
   font-weight: 700;
   color: #667eea;
   line-height: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .xp-label {
@@ -235,6 +283,9 @@
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
   text-align: center;
+  max-width: 100%;
+  word-break: break-word;
+  padding: 0 0.5rem;
 }
 
 .podium-xp {
@@ -242,14 +293,19 @@
   font-weight: 700;
   font-size: 1.2rem;
   opacity: 0.9;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+  padding: 0 0.5rem;
 }
 
-/* Leaderboard List */
+/* Leaderboard List - FIXED */
 .leaderboard-list {
   background: white;
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Prevent content from overflowing */
 }
 
 .leaderboard-list h2 {
@@ -263,17 +319,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0; /* Allow proper shrinking */
 }
 
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 60px 1fr 120px 200px 120px;
+  grid-template-columns: 60px minmax(150px, 1fr) 120px minmax(150px, auto) 120px;
   align-items: center;
   padding: 1rem 1.5rem;
   background: #f8fafc;
   border-radius: 12px;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  min-width: 0; /* Allow proper shrinking */
 }
 
 .leaderboard-row:hover {
@@ -304,18 +362,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .rank-icon {
   font-size: 1.5rem;
   font-weight: 700;
   color: #1f2937;
+  text-align: center;
+  min-width: 30px;
 }
 
 .user-column {
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0; /* Allow proper shrinking */
+  flex: 1;
 }
 
 .user-avatar-small {
@@ -334,12 +397,18 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0; /* Allow proper shrinking */
+  flex: 1;
 }
 
 .user-name {
   color: #000000 !important;
   font-weight: 600;
   font-size: 1.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .you-badge {
@@ -349,11 +418,14 @@
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .level-column {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .level-badge {
@@ -363,40 +435,53 @@
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.9rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .stats-column {
   display: flex;
   gap: 1.5rem;
+  flex-shrink: 0;
+  justify-content: center;
 }
 
 .stat-small {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 60px;
 }
 
 .stat-label-small {
   color: #6b7280;
   font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .stat-value-small {
   color: #1f2937;
   font-weight: 600;
   font-size: 1rem;
+  text-align: center;
 }
 
 .xp-column {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-shrink: 0;
+  min-width: 0; /* Allow proper shrinking */
 }
 
 .xp-display {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  min-width: 0;
 }
 
 .xp-value-large {
@@ -404,12 +489,17 @@
   font-weight: 700;
   color: #667eea;
   line-height: 1;
+  word-break: break-all; /* Allow breaking long numbers */
+  overflow-wrap: break-word;
+  text-align: right;
+  max-width: 100%;
 }
 
 .xp-label-small {
   font-size: 0.75rem;
   color: #6b7280;
   margin-top: 0.25rem;
+  text-align: right;
 }
 
 /* Empty State */
@@ -452,7 +542,34 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Responsive Design */
+/* Responsive Design - IMPROVED */
+@media (max-width: 1024px) {
+  .leaderboard-row {
+    grid-template-columns: 50px minmax(120px, 1fr) 100px minmax(120px, auto) 100px;
+    padding: 0.875rem 1rem;
+    gap: 0.5rem;
+  }
+  
+  .user-avatar-small {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .user-name {
+    font-size: 1rem;
+  }
+  
+  .xp-value-large {
+    font-size: 1.2rem;
+  }
+  
+  .level-badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
 @media (max-width: 768px) {
   .leaderboard-page {
     padding: 1rem;
@@ -462,25 +579,102 @@
     font-size: 2rem;
   }
 
+  .leaderboard-tabs {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .leaderboard-tab {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  /* Fixed Current User Card for Mobile */
   .current-user-card {
     flex-direction: column;
     text-align: center;
     gap: 1.5rem;
+    padding: 1.5rem;
+    align-items: stretch;
+  }
+
+  .user-rank-badge {
+    padding: 1rem;
+    min-width: 80px;
+    width: auto;
+    align-self: center;
+  }
+
+  .rank-number {
+    font-size: 2rem;
   }
 
   .user-info {
     flex-direction: column;
     text-align: center;
+    gap: 1rem;
+    width: 100%;
   }
 
+  .user-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+    margin: 0 auto;
+  }
+
+  .user-details {
+    width: 100%;
+  }
+
+  .user-details h3 {
+    font-size: 1.3rem;
+    white-space: normal; /* Allow name to wrap */
+    overflow: visible;
+  }
+
+  .user-stats {
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .user-xp {
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .xp-value {
+    font-size: 1.8rem;
+  }
+
+  /* Podium improvements */
   .podium {
     flex-direction: column;
     gap: 1rem;
+    padding: 1.5rem;
   }
 
   .podium-item {
     width: 100%;
     min-height: auto;
+    padding: 1.5rem;
+  }
+
+  .podium-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
   }
 
   .podium-item.first {
@@ -495,21 +689,447 @@
     order: 3;
   }
 
-  .leaderboard-row {
-    grid-template-columns: 50px 1fr;
-    gap: 1rem;
-    padding: 1rem;
+  .podium-name {
+    font-size: 1rem;
   }
 
-  .level-column,
-  .stats-column,
-  .xp-column {
-    grid-column: 2;
+  .podium-xp {
+    font-size: 1.1rem;
+  }
+
+  /* Leaderboard List improvements */
+  .leaderboard-list {
+    padding: 1.5rem;
+  }
+
+  .leaderboard-list h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 40px 1fr 90px;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    position: relative;
+  }
+
+  .rank-column {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .user-column {
+    grid-column: 2 / span 2;
+    grid-row: 1;
+    gap: 0.75rem;
+  }
+
+  .user-avatar-small {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .user-name {
+    font-size: 0.95rem;
+    flex: 1;
+  }
+
+  .you-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .level-column {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+    margin-left: 10px;
+  }
+
+  .level-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    max-width: 120px;
   }
 
   .stats-column {
-    flex-direction: column;
-    gap: 0.5rem;
+    grid-column: 2;
+    grid-row: 2;
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .stat-small {
+    min-width: 50px;
+  }
+
+  .stat-label-small {
+    font-size: 0.7rem;
+  }
+
+  .stat-value-small {
+    font-size: 0.9rem;
+  }
+
+  .xp-column {
+    grid-column: 3;
+    grid-row: 2;
+    justify-content: flex-end;
+  }
+
+  .xp-value-large {
+    font-size: 1.1rem;
+    word-break: normal;
+    white-space: nowrap;
+  }
+
+  .xp-label-small {
+    font-size: 0.65rem;
   }
 }
 
+@media (max-width: 480px) {
+  .leaderboard-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .leaderboard-header p {
+    font-size: 1rem;
+  }
+
+  .current-user-card {
+    padding: 1.25rem;
+  }
+
+  .stat-item {
+    min-width: 100px;
+    font-size: 0.8rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 35px 1fr 70px;
+    padding: 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .user-avatar-small {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+  }
+
+  .level-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .xp-value-large {
+    font-size: 1rem;
+  }
+}
+
+/* Responsive Design - Compact Mobile View */
+@media (max-width: 768px) {
+  .leaderboard-page {
+    padding: 1rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .leaderboard-tabs {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+    margin-bottom: 1.5rem;
+  }
+
+  .leaderboard-tab {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  /* COMPACT Current User Card for Mobile */
+  .current-user-card {
+    flex-direction: row; /* Keep as row for mobile */
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 15px;
+  }
+
+  .user-rank-badge {
+    padding: 0.75rem;
+    min-width: 70px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .rank-number {
+    font-size: 1.5rem;
+  }
+
+  .rank-label {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .user-info {
+    flex-direction: row; /* Keep as row */
+    gap: 1rem;
+    align-items: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .user-details {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .user-details h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-stats {
+    display: none; /* Hide detailed stats on mobile for compactness */
+  }
+
+  .user-xp {
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+
+  .xp-value {
+    font-size: 1.2rem;
+  }
+
+  .xp-label {
+    font-size: 0.7rem;
+  }
+
+  /* Podium improvements */
+  .podium {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .podium-item {
+    width: 100%;
+    min-height: auto;
+    padding: 1rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .podium-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    order: 1;
+  }
+
+  .podium-rank {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    order: 2;
+  }
+
+  .podium-name {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    order: 3;
+    flex: 1;
+    text-align: left;
+    padding: 0 0.5rem;
+  }
+
+  .podium-xp {
+    font-size: 0.9rem;
+    order: 4;
+    padding: 0;
+  }
+
+  .podium-item.first {
+    order: 1;
+  }
+
+  .podium-item.second {
+    order: 2;
+  }
+
+  .podium-item.third {
+    order: 3;
+  }
+
+  /* Leaderboard List improvements */
+  .leaderboard-list {
+    padding: 1rem;
+  }
+
+  .leaderboard-list h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 35px 1fr 70px;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .rank-column {
+    grid-column: 1;
+  }
+
+  .user-column {
+    grid-column: 2;
+    gap: 0.5rem;
+  }
+
+  .user-avatar-small {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .user-info-small {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+  }
+
+  .you-badge {
+    display: none; /* Hide "You" badge on mobile to save space */
+  }
+
+  .level-column,
+  .stats-column {
+    display: none; /* Hide these columns on mobile */
+  }
+
+  .xp-column {
+    grid-column: 3;
+  }
+
+  .xp-display {
+    align-items: flex-end;
+  }
+
+  .xp-value-large {
+    font-size: 1rem;
+  }
+
+  .xp-label-small {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even more compact for small phones */
+  .current-user-card {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .user-rank-badge {
+    min-width: 60px;
+    padding: 0.5rem;
+  }
+
+  .rank-number {
+    font-size: 1.3rem;
+  }
+
+  .rank-label {
+    font-size: 0.7rem;
+  }
+
+  .user-avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  .user-details h3 {
+    font-size: 0.9rem;
+  }
+
+  .xp-value {
+    font-size: 1.1rem;
+  }
+
+  .xp-label {
+    font-size: 0.65rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .leaderboard-header p {
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 30px 1fr 60px;
+    padding: 0.6rem;
+    gap: 0.4rem;
+  }
+
+  .user-avatar-small {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+
+  .user-name {
+    font-size: 0.8rem;
+  }
+
+  .rank-icon {
+    font-size: 1rem;
+  }
+
+  .xp-value-large {
+    font-size: 0.9rem;
+  }
+}

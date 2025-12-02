@@ -203,7 +203,8 @@ router.post('/login', async (req, res) => {
         phone: user.phone,
         pscStream: user.pscStream,
         role: user.role,
-        isActive: user.isActive
+        isActive: user.isActive,
+        isContributor: user.isContributor || false
       }
     });
     console.log('[Login] Login successful');

@@ -14,9 +14,9 @@ const ProtectedRoute = ({ user, children, requireAdmin = false }) => {
     }
   }
 
-  // Check for contributor routes
+  // Check for contributor routes (per-user contributor flag or admin)
   if (location.pathname.startsWith('/contributor')) {
-    if (user.role !== 'contributor' && user.role !== 'admin') {
+    if (!user.isContributor && user.role !== 'admin') {
       return <Navigate to="/dashboard" replace />;
     }
   }

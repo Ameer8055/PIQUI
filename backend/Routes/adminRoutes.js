@@ -88,17 +88,31 @@ router.get('/questions', async (req, res) => {
 // Approve/Reject contributor question
 router.post('/questions/:id/approve', async (req, res) => {
   try {
-    const question = await Question.findById(req.params.id);
+    const question = await Question.findById(req.params.id).populate('createdBy');
     if (!question) {
       return res.status(404).json({ status: 'error', message: 'Question not found' });
     }
 
+    const wasPending = question.status === 'pending';
     question.status = 'approved';
     question.isActive = true;
     question.reviewedBy = req.user?._id || null;
     question.reviewedAt = new Date();
 
     await question.save();
+
+    // Award contributor points: +10 for approval, -1 for the submission point if it was pending
+    if (question.createdBy && question.createdBy.isContributor) {
+      const contributor = await User.findById(question.createdBy._id);
+      if (contributor) {
+        if (wasPending) {
+          contributor.contributorPoints = (contributor.contributorPoints || 0) - 1 + 10; // Remove submission point, add approval points
+        } else {
+          contributor.contributorPoints = (contributor.contributorPoints || 0) + 10; // Just add approval points
+        }
+        await contributor.save();
+      }
+    }
 
     res.json({
       status: 'success',
@@ -113,17 +127,27 @@ router.post('/questions/:id/approve', async (req, res) => {
 
 router.post('/questions/:id/reject', async (req, res) => {
   try {
-    const question = await Question.findById(req.params.id);
+    const question = await Question.findById(req.params.id).populate('createdBy');
     if (!question) {
       return res.status(404).json({ status: 'error', message: 'Question not found' });
     }
 
+    const wasPending = question.status === 'pending';
     question.status = 'rejected';
     question.isActive = false;
     question.reviewedBy = req.user?._id || null;
     question.reviewedAt = new Date();
 
     await question.save();
+
+    // Deduct contributor points: -1 for rejection (removes the submission point)
+    if (question.createdBy && question.createdBy.isContributor && wasPending) {
+      const contributor = await User.findById(question.createdBy._id);
+      if (contributor) {
+        contributor.contributorPoints = Math.max(0, (contributor.contributorPoints || 0) - 1); // Remove submission point, minimum 0
+        await contributor.save();
+      }
+    }
 
     res.json({
       status: 'success',
@@ -530,6 +554,61 @@ router.put('/users/:id/role', async (req, res) => {
       data: user
     });
   } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Enable / disable contributor access for a user
+router.put('/users/:id/contributor', async (req, res) => {
+  try {
+    const { isContributor } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isContributor: !!isContributor },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    res.json({
+      status: 'success',
+      message: `Contributor access ${user.isContributor ? 'enabled' : 'disabled'} successfully`,
+      data: user
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Get contributor leaderboard
+router.get('/contributors/leaderboard', async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    
+    const contributors = await User.find({ isContributor: true })
+      .select('name avatar contributorPoints')
+      .sort({ contributorPoints: -1 })
+      .limit(parseInt(limit))
+      .lean();
+    
+    const leaderboard = contributors.map((contributor, index) => ({
+      rank: index + 1,
+      name: contributor.name,
+      avatar: contributor.avatar || contributor.name?.charAt(0)?.toUpperCase() || 'U',
+      contributorPoints: contributor.contributorPoints || 0
+    }));
+    
+    res.json({
+      status: 'success',
+      data: {
+        leaderboard
+      }
+    });
+  } catch (error) {
+    console.error('Contributor leaderboard error:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 });

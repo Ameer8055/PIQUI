@@ -60,12 +60,14 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .users-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 1000px;
 }
 
 .users-table th {
@@ -149,31 +151,39 @@
 
 .action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  min-width: 300px;
 }
 
 .view-details-btn {
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   border: none;
   background: #2563eb;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
 }
 
 .view-details-btn:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .status-btn {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .status-btn.activate {
@@ -186,9 +196,19 @@
   color: white;
 }
 
+.status-btn.contributor-btn {
+  background: #ff9800;
+  color: white;
+}
+
+.status-btn.contributor-btn:hover {
+  background: #f57c00;
+}
+
 .status-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .no-users {
@@ -203,4 +223,326 @@
   padding: 3rem;
   font-size: 1.2rem;
   color: #6c757d;
+}
+
+/* Ensure Actions column is visible */
+.users-table th:last-child,
+.users-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 10;
+}
+
+.users-table th:last-child {
+  background: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .users-table-container {
+    overflow-x: auto;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .status-btn,
+  .view-details-btn {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
+
+/* Make sure buttons are always visible */
+.users-table td:last-child {
+  min-width: 280px;
+}
+
+/* Scoped to admin-users only to prevent conflicts with user dashboard */
+.admin-users {
+  max-width: 1200px;
+}
+
+.admin-users .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-users .header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-users .search-box input {
+  padding: 10px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  width: 300px;
+  font-size: 0.9rem;
+}
+
+.admin-users .search-box input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.admin-users .users-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-users .stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.admin-users .stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.admin-users .stat-label {
+  color: #000000;
+  font-weight: 500;
+}
+
+.users-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.users-table th {
+  background: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.users-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.user-details .user-name {
+  font-weight: 600;
+  color: #000000 !important;
+}
+
+.user-details .user-stream {
+  font-size: 0.8rem;
+  color: #000000;
+  text-transform: capitalize;
+}
+
+.role-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.role-badge.admin {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.role-badge.user {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 300px;
+}
+
+.view-details-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.view-details-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.status-btn.activate {
+  background: #28a745;
+  color: white;
+}
+
+.status-btn.deactivate {
+  background: #dc3545;
+  color: white;
+}
+
+.status-btn.contributor-btn {
+  background: #ff9800;
+  color: white;
+}
+
+.status-btn.contributor-btn:hover {
+  background: #f57c00;
+}
+
+.status-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.no-users {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #6c757d;
+}
+
+/* FIXED: Remove sticky positioning to allow horizontal scrolling */
+/* This will make the Actions column scroll with the rest of the table */
+.users-table th:last-child,
+.users-table td:last-child {
+  /* Remove sticky positioning */
+  position: static;
+  background: inherit;
+  z-index: 1;
+}
+
+.users-table th:last-child {
+  background: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .users-table-container {
+    overflow-x: auto;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .status-btn,
+  .view-details-btn {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
+
+/* Make sure buttons are always visible but remove min-width if it causes issues */
+.users-table td:last-child {
+  min-width: 280px;
+}
+
+/* Optional: Add a subtle background to the Actions column for better visibility */
+.users-table td:last-child {
+  background: linear-gradient(90deg, rgba(248, 249, 250, 0.1) 0%, rgba(248, 249, 250, 0.3) 100%);
+}
+
+.users-table th:last-child {
+  background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* For better mobile experience */
+@media (max-width: 768px) {
+  .action-buttons {
+    min-width: 250px;
+  }
+  
+  .users-table td:last-child {
+    min-width: 250px;
+  }
 }

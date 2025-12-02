@@ -4,13 +4,13 @@ const Question = require('../Models/Question');
 const User = require('../Models/User');
 const { auth } = require('../Middlewares/authMiddleware');
 
-// Middleware to check if user is contributor or admin
+// Middleware to check if user has contributor access or is admin
 const contributorAuth = async (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ status: 'error', message: 'Authentication required' });
     }
-    if (req.user.role !== 'contributor' && req.user.role !== 'admin') {
+    if (!req.user.isContributor && req.user.role !== 'admin') {
       return res.status(403).json({ status: 'error', message: 'Contributor access required' });
     }
     next();
@@ -71,6 +71,11 @@ router.post('/questions', auth, contributorAuth, async (req, res) => {
 
     await newQuestion.save();
 
+    // Award contributor points for submitting (will be adjusted when approved/rejected)
+    const user = await User.findById(req.user._id);
+    user.contributorPoints = (user.contributorPoints || 0) + 1; // 1 point for submission
+    await user.save();
+
     res.status(201).json({
       status: 'success',
       message: 'Question submitted for review',
@@ -95,11 +100,18 @@ router.put('/questions/:id', auth, contributorAuth, async (req, res) => {
       return res.status(403).json({ status: 'error', message: 'Not authorized to edit this question' });
     }
 
-    if (question.status !== 'pending') {
+    // Allow editing pending questions, or approved/rejected questions (for corrections)
+    if (question.status !== 'pending' && question.status !== 'approved' && question.status !== 'rejected') {
       return res.status(400).json({
         status: 'error',
-        message: 'Can only edit pending questions'
+        message: 'Cannot edit questions with this status'
       });
+    }
+    
+    // If editing approved/rejected question, reset status to pending for re-review
+    if (question.status === 'approved' || question.status === 'rejected') {
+      question.status = 'pending';
+      question.isActive = false;
     }
 
     const { question: questionText, options, correctAnswer, explanation, category, subCategory, tags } = req.body;
@@ -148,11 +160,22 @@ router.delete('/questions/:id', auth, contributorAuth, async (req, res) => {
       return res.status(403).json({ status: 'error', message: 'Not authorized to delete this question' });
     }
 
-    if (question.status !== 'pending') {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Can only delete pending questions'
-      });
+    // Allow deletion of any status question
+    // If deleting approved question, adjust contributor points
+    if (question.status === 'approved') {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        // Deduct 10 points for deleting an approved question
+        user.contributorPoints = Math.max(0, (user.contributorPoints || 0) - 10);
+        await user.save();
+      }
+    } else if (question.status === 'pending') {
+      // Deduct 1 point for deleting a pending question (removes submission point)
+      const user = await User.findById(req.user._id);
+      if (user) {
+        user.contributorPoints = Math.max(0, (user.contributorPoints || 0) - 1);
+        await user.save();
+      }
     }
 
     await Question.findByIdAndDelete(req.params.id);
@@ -170,6 +193,7 @@ router.delete('/questions/:id', auth, contributorAuth, async (req, res) => {
 // Get contributor stats
 router.get('/stats', auth, contributorAuth, async (req, res) => {
   try {
+    const user = await User.findById(req.user._id).select('contributorPoints');
     const totalQuestions = await Question.countDocuments({ createdBy: req.user._id });
     const pendingQuestions = await Question.countDocuments({
       createdBy: req.user._id,
@@ -190,7 +214,8 @@ router.get('/stats', auth, contributorAuth, async (req, res) => {
         totalQuestions,
         pendingQuestions,
         approvedQuestions,
-        rejectedQuestions
+        rejectedQuestions,
+        contributorPoints: user.contributorPoints || 0
       }
     });
   } catch (error) {

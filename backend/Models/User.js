@@ -62,6 +62,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'contributor'],
     default: 'user'
   },
+  // Per-user contributor access (admin can enable/disable without changing role)
+  isContributor: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -299,6 +304,11 @@ const userSchema = new mongoose.Schema({
 
   // Points System
   points: {
+    type: Number,
+    default: 0
+  },
+  // Contributor Points System (separate from regular points)
+  contributorPoints: {
     type: Number,
     default: 0
   },

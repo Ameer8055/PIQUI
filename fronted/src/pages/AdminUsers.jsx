@@ -52,16 +52,43 @@ const AdminUsers = ({ user }) => {
 
   const toggleUserStatus = async (userId, currentStatus) => {
     try {
-      await axios.put(`${API_BASE_URL}/admin/users/${userId}/status`, {
-        isActive: !currentStatus
+      const newStatus = !currentStatus;
+      const response = await axios.put(`${API_BASE_URL}/admin/users/${userId}/status`, {
+        isActive: newStatus
       });
-      fetchUsers(); // Refresh the list
+      
+      if (response.data.status === 'success') {
+        // Update locally immediately for better UX
+        setUsers(prev => prev.map(user => 
+          user._id === userId ? { ...user, isActive: newStatus } : user
+        ));
+        // Refresh to get latest data
+        fetchUsers();
+      }
     } catch (error) {
       console.error('Error updating user status:', error);
-      // For demo, update locally
-      setUsers(prev => prev.map(user => 
-        user._id === userId ? { ...user, isActive: !currentStatus } : user
-      ));
+      alert(error.response?.data?.message || 'Failed to update user status');
+    }
+  };
+
+  const toggleContributor = async (userId, currentValue) => {
+    try {
+      const newValue = !currentValue;
+      const response = await axios.put(`${API_BASE_URL}/admin/users/${userId}/contributor`, {
+        isContributor: newValue
+      });
+      
+      if (response.data.status === 'success') {
+        // Update locally immediately for better UX
+        setUsers(prev => prev.map(u =>
+          u._id === userId ? { ...u, isContributor: newValue } : u
+        ));
+        // Refresh to get latest data
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating contributor access:', error);
+      alert(error.response?.data?.message || 'Failed to update contributor access');
     }
   };
 
@@ -167,6 +194,7 @@ const AdminUsers = ({ user }) => {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Contributor</th>
                 <th>Joined</th>
                 <th>Actions</th>
               </tr>
@@ -197,6 +225,11 @@ const AdminUsers = ({ user }) => {
                     </span>
                   </td>
                   <td>
+                    <span className={`status-badge ${user.isContributor ? 'active' : 'inactive'}`}>
+                      {user.isContributor ? '✅ Enabled' : '❌ Disabled'}
+                    </span>
+                  </td>
+                  <td>
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td>
@@ -204,15 +237,26 @@ const AdminUsers = ({ user }) => {
                       <button
                         className="view-details-btn"
                         onClick={() => navigate(`/admin/users/${user._id}`)}
+                        title="View detailed user activity"
                       >
-                        View Details
+                        📋 Details
                       </button>
                       <button
                         className={`status-btn ${user.isActive ? 'deactivate' : 'activate'}`}
                         onClick={() => toggleUserStatus(user._id, user.isActive)}
+                        title={user.isActive ? 'Deactivate user account' : 'Activate user account'}
                       >
-                        {user.isActive ? 'Deactivate' : 'Activate'}
+                        {user.isActive ? '🚫 Deactivate' : '✅ Activate'}
                       </button>
+                      {user.role !== 'admin' && (
+                        <button
+                          className={`status-btn contributor-btn ${user.isContributor ? 'deactivate' : 'activate'}`}
+                          onClick={() => toggleContributor(user._id, user.isContributor)}
+                          title={user.isContributor ? 'Revoke contributor access' : 'Grant contributor access'}
+                        >
+                          {user.isContributor ? '❌ Revoke' : '✨ Allow'} Contribution
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getCategoriesForSubject, getSubjectName } from '../utils/quizCategories';
 import './ContributorDashboard.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -8,27 +9,63 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const ContributorDashboard = ({ user }) => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const categories = [
+    "kerala-gk",
+    "india-gk",
+    "mathematics",
+    "english",
+    "malayalam",
+    "constitution",
+    "reasoning",
+    "computer",
+    "current-affairs",
+    "science",
+    "movies-tv",
+    "music",
+    "video-games",
+    "sports",
+    "food",
+    "travel",
+    "books",
+    "pop-culture",
+  ];
+
   const [formData, setFormData] = useState({
     question: '',
     options: ['', '', '', ''],
     correctAnswer: 0,
     explanation: '',
-    category: 'general-knowledge',
+    category: 'india-gk',
     subCategory: 'All',
     tags: ''
   });
 
   useEffect(() => {
-    if (user?.role !== 'contributor' && user?.role !== 'admin') {
+    if (!user?.isContributor && user?.role !== 'admin') {
       navigate('/dashboard');
       return;
     }
     fetchData();
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredQuestions(questions);
+    } else {
+      const filtered = questions.filter(q =>
+        q.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (q.tags && q.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      );
+      setFilteredQuestions(filtered);
+    }
+  }, [searchTerm, questions]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -45,6 +82,7 @@ const ContributorDashboard = ({ user }) => {
 
       if (questionsRes.data.status === 'success') {
         setQuestions(questionsRes.data.data);
+        setFilteredQuestions(questionsRes.data.data);
       }
       if (statsRes.data.status === 'success') {
         setStats(statsRes.data.data);
@@ -100,6 +138,33 @@ const ContributorDashboard = ({ user }) => {
     }
   };
 
+  const handleDeleteAnyStatus = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      // Try contributor endpoint first, if it fails (because status is not pending), use admin endpoint
+      try {
+        await axios.delete(`${API_BASE_URL}/contributor/questions/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (err) {
+        // If contributor delete fails, try admin delete (if user is admin)
+        if (user?.role === 'admin') {
+          await axios.delete(`${API_BASE_URL}/admin/questions/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } else {
+          throw err;
+        }
+      }
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      alert(error.response?.data?.message || 'Failed to delete question');
+    }
+  };
+
   const handleEdit = (question) => {
     setEditingQuestion(question);
     setFormData({
@@ -120,11 +185,35 @@ const ContributorDashboard = ({ user }) => {
       options: ['', '', '', ''],
       correctAnswer: 0,
       explanation: '',
-      category: 'general-knowledge',
+      category: 'india-gk',
       subCategory: 'All',
       tags: ''
     });
     setEditingQuestion(null);
+  };
+
+  const getCategoryDisplayName = (category) => {
+    const names = {
+      "kerala-gk": "Kerala GK",
+      "india-gk": "India GK",
+      mathematics: "Mathematics",
+      english: "English",
+      malayalam: "Malayalam",
+      constitution: "Constitution",
+      reasoning: "Reasoning",
+      computer: "Computer",
+      "current-affairs": "Current Affairs",
+      science: "Science",
+      "movies-tv": "Movies & TV Shows",
+      music: "Music & Artists",
+      "video-games": "Video Games",
+      sports: "Sports",
+      food: "Food & Cuisine",
+      travel: "Travel & Places",
+      books: "Books & Literature",
+      "pop-culture": "Pop Culture",
+    };
+    return names[category] || category;
   };
 
   const getStatusBadge = (status) => {
@@ -166,10 +255,26 @@ const ContributorDashboard = ({ user }) => {
             <div className="stat-value">{stats.rejectedQuestions}</div>
             <div className="stat-label">Rejected</div>
           </div>
+          <div className="stat-card highlight-card">
+            <div className="stat-value">{stats.contributorPoints || 0}</div>
+            <div className="stat-label">Contributor Points</div>
+          </div>
         </div>
       )}
 
       <div className="actions-bar">
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+          )}
+        </div>
         <button className="btn-primary" onClick={() => { resetForm(); setShowAddForm(true); }}>
           + Add New Question
         </button>
@@ -232,23 +337,34 @@ const ContributorDashboard = ({ user }) => {
                   <label>Category *</label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => {
+                      const newCategory = e.target.value;
+                      const subCategories = getCategoriesForSubject(newCategory);
+                      setFormData({ 
+                        ...formData, 
+                        category: newCategory,
+                        subCategory: subCategories[0] || 'All'
+                      });
+                    }}
                     required
                   >
-                    <option value="general-knowledge">General Knowledge</option>
-                    <option value="mathematics">Mathematics</option>
-                    <option value="english">English</option>
-                    <option value="current-affairs">Current Affairs</option>
-                    <option value="science">Science</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {getCategoryDisplayName(category)}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
                   <label>Sub Category</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.subCategory}
                     onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                  />
+                  >
+                    {getCategoriesForSubject(formData.category).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -276,27 +392,36 @@ const ContributorDashboard = ({ user }) => {
       )}
 
       <div className="questions-list">
-        <h2>Your Questions</h2>
-        {questions.length === 0 ? (
+        <h2>Your Questions {filteredQuestions.length !== questions.length && `(${filteredQuestions.length} of ${questions.length})`}</h2>
+        {filteredQuestions.length === 0 ? (
           <div className="empty-state">
-            <p>No questions yet. Add your first question!</p>
+            <p>{searchTerm ? 'No questions found matching your search.' : 'No questions yet. Add your first question!'}</p>
           </div>
         ) : (
           <div className="questions-grid">
-            {questions.map((q) => (
+            {filteredQuestions.map((q) => (
               <div key={q._id} className="question-card">
                 <div className="question-header">
                   {getStatusBadge(q.status)}
                   <span className="question-category">{q.category}</span>
                 </div>
                 <div className="question-text">{q.question}</div>
+                {q.options && q.options.length > 0 && (
+                  <div className="question-options-preview">
+                    <strong>Options:</strong>
+                    <ul>
+                      {q.options.map((opt, idx) => (
+                        <li key={idx} className={idx === q.correctAnswer ? 'correct-option' : ''}>
+                          {String.fromCharCode(65 + idx)}. {opt}
+                          {idx === q.correctAnswer && ' ✓'}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="question-actions">
-                  {q.status === 'pending' && (
-                    <>
-                      <button className="btn-edit" onClick={() => handleEdit(q)}>Edit</button>
-                      <button className="btn-delete" onClick={() => handleDelete(q._id)}>Delete</button>
-                    </>
-                  )}
+                  <button className="btn-edit" onClick={() => handleEdit(q)}>Edit</button>
+                  <button className="btn-delete" onClick={() => handleDeleteAnyStatus(q._id)}>Delete</button>
                 </div>
               </div>
             ))}

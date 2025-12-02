@@ -6,10 +6,12 @@ import './Leaderboard.css'
 const Leaderboard = ({ user }) => {
   const navigate = useNavigate()
   const [leaderboard, setLeaderboard] = useState([])
+  const [contributorLeaderboard, setContributorLeaderboard] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
   const [currentUserRank, setCurrentUserRank] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [activeTab, setActiveTab] = useState('quiz') // 'quiz' or 'contributor'
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -19,6 +21,7 @@ const Leaderboard = ({ user }) => {
 
   useEffect(() => {
     fetchLeaderboard()
+    fetchContributorLeaderboard()
   }, [])
 
   const fetchLeaderboard = async () => {
@@ -58,6 +61,26 @@ const Leaderboard = ({ user }) => {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchContributorLeaderboard = async () => {
+    try {
+      const token = getAuthToken()
+      if (!token) return
+
+      const response = await axios.get(`${API_BASE_URL}/quiz/contributors/leaderboard`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.data.status === 'success') {
+        setContributorLeaderboard(response.data.data.leaderboard || [])
+      }
+    } catch (err) {
+      console.error('Error fetching contributor leaderboard:', err)
+      // Don't show error for contributor leaderboard, it's optional
     }
   }
 
@@ -104,131 +127,165 @@ const Leaderboard = ({ user }) => {
         </div>
       )}
 
-      {/* Current User Card */}
-      {currentUser && (
-        <div className="current-user-card">
-          <div className="user-rank-badge">
-            <span className="rank-number">{currentUserRank}</span>
-            <span className="rank-label">Your Rank</span>
-          </div>
-          <div className="user-info">
-            <div className="user-avatar">
-              {currentUser.avatar || '👤'}
-            </div>
-            <div className="user-details">
-              <h3>{currentUser.name}</h3>
-              <div className="user-stats">
-                <span className="stat-item">
-                  <span className="stat-icon">⭐</span>
-                  {currentUser.points || 0} Points
-                </span>
-                <span className="stat-item">
-                  <span className="stat-icon">🏆</span>
-                  {currentUser.battlesWon || 0} Wins
-                </span>
-                <span className="stat-item">
-                  <span className="stat-icon">⚔️</span>
-                  {currentUser.totalBattles || 0} Battles
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="user-xp">
-            <span className="xp-value">{currentUser.points || 0}</span>
-            <span className="xp-label">Points</span>
-          </div>
-        </div>
-      )}
-
-      {/* Top 3 Podium */}
-      {leaderboard.length >= 3 && (
-        <div className="podium-section">
-          <div className="podium">
-            <div className="podium-item second">
-              <div className="podium-avatar">{leaderboard[1]?.avatar || '👤'}</div>
-              <div className="podium-rank">🥈</div>
-              <div className="podium-name">{leaderboard[1]?.name}</div>
-              <div className="podium-xp">{leaderboard[1]?.points || 0} Points</div>
-            </div>
-            <div className="podium-item first">
-              <div className="podium-avatar">{leaderboard[0]?.avatar || '👤'}</div>
-              <div className="podium-rank">🥇</div>
-              <div className="podium-name">{leaderboard[0]?.name}</div>
-              <div className="podium-xp">{leaderboard[0]?.points || 0} Points</div>
-            </div>
-            <div className="podium-item third">
-              <div className="podium-avatar">{leaderboard[2]?.avatar || '👤'}</div>
-              <div className="podium-rank">🥉</div>
-              <div className="podium-name">{leaderboard[2]?.name}</div>
-              <div className="podium-xp">{leaderboard[2]?.points || 0} Points</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Leaderboard List */}
-      <div className="leaderboard-list">
-        <h2>Full Rankings</h2>
-        {leaderboard.length > 0 ? (
-          <div className="leaderboard-table">
-            {leaderboard.map((entry, index) => (
-              <div
-                key={index}
-                className={`leaderboard-row ${getRankClass(entry.rank)} ${entry.isCurrentUser ? 'current-user' : ''}`}
-              >
-                <div className="rank-column">
-                  <span className="rank-icon">{getRankIcon(entry.rank)}</span>
-                </div>
-                <div className="user-column">
-                  <div className="user-avatar-small">
-                    {entry.avatar || '👤'}
-                  </div>
-                  <div className="user-info-small">
-                    <div className="user-name">{entry.name}</div>
-                    {entry.isCurrentUser && (
-                      <span className="you-badge">You</span>
-                    )}
-                  </div>
-                </div>
-                <div className="level-column">
-                  <span className="level-badge">⭐ {entry.points || 0} Points</span>
-                </div>
-                <div className="stats-column">
-                  <div className="stat-small">
-                    <span className="stat-label-small">Wins</span>
-                    <span className="stat-value-small">{entry.battlesWon || 0}</span>
-                  </div>
-                  <div className="stat-small">
-                    <span className="stat-label-small">Quizzes</span>
-                    <span className="stat-value-small">{entry.totalQuizzes || 0}</span>
-                  </div>
-                </div>
-                <div className="xp-column">
-                  <div className="xp-display">
-                    <span className="xp-value-large">{entry.points || 0}</span>
-                    <span className="xp-label-small">Points</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-icon">🏆</div>
-            <p>No leaderboard data available yet.</p>
-            <p className="empty-subtitle">Complete quizzes to appear on the leaderboard!</p>
-            <button 
-              className="start-quiz-btn"
-              onClick={() => navigate('/daily-quiz')}
-            >
-              Start Your First Quiz
-            </button>
-          </div>
-        )}
+      {/* Tab Selector */}
+      <div className="leaderboard-tabs">
+        <button
+          className={`leaderboard-tab ${activeTab === 'quiz' ? 'active' : ''}`}
+          onClick={() => setActiveTab('quiz')}
+        >
+          🏆 Quiz Leaderboard
+        </button>
+        <button
+          className={`leaderboard-tab ${activeTab === 'contributor' ? 'active' : ''}`}
+          onClick={() => setActiveTab('contributor')}
+        >
+          ✨ Contributor Leaderboard
+        </button>
       </div>
+
+      {activeTab === 'quiz' && (
+        <>
+          {/* Current User Card */}
+          {currentUser && (
+            <div className="current-user-card">
+              <div className="user-rank-badge">
+                <span className="rank-number">{currentUserRank}</span>
+                <span className="rank-label">Your Rank</span>
+              </div>
+              <div className="user-info">
+                <div className="user-avatar">
+                  {currentUser.avatar || '👤'}
+                </div>
+                <div className="user-details">
+                  <h3>{currentUser.name}</h3>
+                  <div className="user-stats">
+                    <span className="stat-item">
+                      <span className="stat-icon">⭐</span>
+                      {currentUser.points || 0} Points
+                    </span>
+                    <span className="stat-item">
+                      <span className="stat-icon">🏆</span>
+                      {currentUser.battlesWon || 0} Wins
+                    </span>
+                    <span className="stat-item">
+                      <span className="stat-icon">⚔️</span>
+                      {currentUser.totalBattles || 0} Battles
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="user-xp">
+                <span className="xp-value">{currentUser.points || 0}</span>
+                <span className="xp-label">Points</span>
+              </div>
+            </div>
+          )}
+
+         
+
+          {/* Leaderboard List */}
+          <div className="leaderboard-list">
+            <h2>Full Rankings</h2>
+            {leaderboard.length > 0 ? (
+              <div className="leaderboard-table">
+                {leaderboard.map((entry, index) => (
+                  <div
+                    key={index}
+                    className={`leaderboard-row ${getRankClass(entry.rank)} ${entry.isCurrentUser ? 'current-user' : ''}`}
+                  >
+                    <div className="rank-column">
+                      <span className="rank-icon">{getRankIcon(entry.rank)}</span>
+                    </div>
+                    <div className="user-column">
+                      <div className="user-avatar-small">
+                        {entry.avatar || '👤'}
+                      </div>
+                      <div className="user-info-small">
+                        <div className="user-name">{entry.name}</div>
+                        {entry.isCurrentUser && (
+                          <span className="you-badge">You</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="level-column">
+                      <span className="level-badge">⭐ {entry.points || 0} Points</span>
+                    </div>
+                    <div className="stats-column">
+                      <div className="stat-small">
+                        <span className="stat-label-small">Wins</span>
+                        <span className="stat-value-small">{entry.battlesWon || 0}</span>
+                      </div>
+                      <div className="stat-small">
+                        <span className="stat-label-small">Quizzes</span>
+                        <span className="stat-value-small">{entry.totalQuizzes || 0}</span>
+                      </div>
+                    </div>
+                    <div className="xp-column">
+                      <div className="xp-display">
+                        <span className="xp-value-large">{entry.points || 0}</span>
+                        <span className="xp-label-small">Points</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">🏆</div>
+                <p>No leaderboard data available yet.</p>
+                <p className="empty-subtitle">Complete quizzes to appear on the leaderboard!</p>
+                <button 
+                  className="start-quiz-btn"
+                  onClick={() => navigate('/daily-quiz')}
+                >
+                  Start Your First Quiz
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {activeTab === 'contributor' && (
+        <div className="leaderboard-list">
+          <h2>Top Contributors</h2>
+          {contributorLeaderboard.length > 0 ? (
+            <div className="leaderboard-table">
+              {contributorLeaderboard.map((entry, index) => (
+                <div
+                  key={index}
+                  className={`leaderboard-row ${getRankClass(entry.rank)}`}
+                >
+                  <div className="rank-column">
+                    <span className="rank-icon">{getRankIcon(entry.rank)}</span>
+                  </div>
+                  <div className="user-column">
+                    <div className="user-avatar-small">
+                      {entry.avatar || '👤'}
+                    </div>
+                    <div className="user-info-small">
+                      <div className="user-name">{entry.name}</div>
+                    </div>
+                  </div>
+                  <div className="xp-column">
+                    <div className="xp-display">
+                      <span className="xp-value-large">{entry.contributorPoints || 0}</span>
+                      <span className="xp-label-small">Points</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">✨</div>
+              <p>No contributors yet.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
 export default Leaderboard
-

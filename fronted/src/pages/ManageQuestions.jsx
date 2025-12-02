@@ -20,6 +20,9 @@ const ManageQuestions = ({ user }) => {
   const [bulkImportFile, setBulkImportFile] = useState(null);
   const [bulkImportLoading, setBulkImportLoading] = useState(false);
   const [bulkImportResult, setBulkImportResult] = useState(null);
+  const [pendingQuestions, setPendingQuestions] = useState([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [activeView, setActiveView] = useState('all'); // 'all' or 'pending'
 
   const categories = [
     "all",
@@ -55,7 +58,14 @@ const ManageQuestions = ({ user }) => {
 
   useEffect(() => {
     fetchQuestions();
+    fetchPendingQuestions();
   }, []);
+
+  useEffect(() => {
+    if (activeView === 'pending') {
+      fetchPendingQuestions();
+    }
+  }, [activeView]);
 
   useEffect(() => {
     filterQuestions();
@@ -72,6 +82,67 @@ const ManageQuestions = ({ user }) => {
       console.error("Error fetching questions:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingQuestions = async () => {
+    setLoadingPending(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(
+        `${API_BASE_URL}/admin/questions/pending`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.data.status === 'success') {
+        setPendingQuestions(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching pending questions:", error);
+      toast.error("Failed to fetch pending questions");
+    } finally {
+      setLoadingPending(false);
+    }
+  };
+
+  const handleApprove = async (questionId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.post(
+        `${API_BASE_URL}/admin/questions/${questionId}/approve`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      toast.success("Question approved successfully!");
+      fetchPendingQuestions();
+      fetchQuestions(); // Refresh all questions too
+    } catch (error) {
+      console.error("Error approving question:", error);
+      toast.error(error.response?.data?.message || "Failed to approve question");
+    }
+  };
+
+  const handleReject = async (questionId) => {
+    if (!window.confirm('Are you sure you want to reject this question?')) return;
+    
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.post(
+        `${API_BASE_URL}/admin/questions/${questionId}/reject`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      toast.success("Question rejected");
+      fetchPendingQuestions();
+      fetchQuestions(); // Refresh all questions too
+    } catch (error) {
+      console.error("Error rejecting question:", error);
+      toast.error(error.response?.data?.message || "Failed to reject question");
     }
   };
 
@@ -349,6 +420,143 @@ const ManageQuestions = ({ user }) => {
         </div>
       </div>
 
+      {/* View Tabs */}
+      <div className="view-tabs">
+        <button
+          className={`view-tab ${activeView === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveView('all')}
+        >
+          📚 All Questions
+        </button>
+        <button
+          className={`view-tab ${activeView === 'pending' ? 'active' : ''}`}
+          onClick={() => setActiveView('pending')}
+        >
+          ⏳ Pending Approvals
+          {pendingQuestions.length > 0 && (
+            <span className="pending-badge">{pendingQuestions.length}</span>
+          )}
+        </button>
+      </div>
+
+      {/* Pending Approvals Section */}
+      {activeView === 'pending' && (
+        <div className="pending-approvals-section">
+          <div className="section-header">
+            <h2>Pending Contributor Questions</h2>
+            <p>Review and approve questions submitted by contributors</p>
+          </div>
+
+          {loadingPending ? (
+            <div className="loading">Loading pending questions...</div>
+          ) : pendingQuestions.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">✅</div>
+              <p>No pending questions to review!</p>
+            </div>
+          ) : (
+            <div className="pending-questions-list">
+              {pendingQuestions.map((question) => (
+                <div key={question._id} className="pending-question-card">
+                  <div className="question-card-header">
+                    <div className="contributor-info">
+                      <div className="contributor-avatar">
+                        {question.createdBy?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div className="contributor-details">
+                        <div className="contributor-name">
+                          {question.createdBy?.name || 'Unknown User'}
+                        </div>
+                        <div className="contributor-email">
+                          {question.createdBy?.email || 'N/A'}
+                        </div>
+                        <div className="submission-date">
+                          Submitted: {new Date(question.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="question-status-badge pending">
+                      Pending Review
+                    </div>
+                  </div>
+
+                  <div className="question-content">
+                    <div className="question-meta">
+                      <span className="category-badge">{getCategoryDisplayName(question.category)}</span>
+                      {question.subCategory && question.subCategory !== 'All' && (
+                        <span className="subcategory-badge">{question.subCategory}</span>
+                      )}
+                    </div>
+
+                    <div className="question-text">
+                      <strong>Question:</strong>
+                      <p>{question.question}</p>
+                    </div>
+
+                    <div className="question-options-list">
+                      <strong>Options:</strong>
+                      <ul>
+                        {question.options?.map((option, index) => (
+                          <li key={index} className={index === question.correctAnswer ? 'correct-answer' : ''}>
+                            {String.fromCharCode(65 + index)}. {option}
+                            {index === question.correctAnswer && ' ✓ (Correct)'}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {question.explanation && (
+                      <div className="question-explanation">
+                        <strong>Explanation:</strong>
+                        <p>{question.explanation}</p>
+                      </div>
+                    )}
+
+                    {question.tags && question.tags.length > 0 && (
+                      <div className="question-tags">
+                        <strong>Tags:</strong>
+                        <div className="tags-list">
+                          {question.tags.map((tag, index) => (
+                            <span key={index} className="tag">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="question-actions-pending">
+                    <button
+                      className="btn-approve"
+                      onClick={() => handleApprove(question._id)}
+                    >
+                      ✅ Approve
+                    </button>
+                    <button
+                      className="btn-reject"
+                      onClick={() => handleReject(question._id)}
+                    >
+                      ❌ Reject
+                    </button>
+                    <button
+                      className="btn-edit"
+                      onClick={() => {
+                        handleEdit(question);
+                        setActiveView('all');
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* All Questions Section */}
+      {activeView === 'all' && (
+        <>
       {/* Search and Filter Section */}
       <div className="filters-section">
         <div className="search-box">
@@ -384,22 +592,22 @@ const ManageQuestions = ({ user }) => {
         </div>
       </div>
 
-      {/* Current Filter Info */}
-      <div className="current-filter-info">
-        <h2>
-          {selectedCategory === "all"
-            ? "All Questions"
-            : getCategoryDisplayName(selectedCategory)}
-          {searchTerm && ` containing "${searchTerm}"`}
-          <span className="total-count">
-            {" "}
-            ({filteredQuestions.length} questions)
-          </span>
-        </h2>
-      </div>
+          {/* Current Filter Info */}
+          <div className="current-filter-info">
+            <h2>
+              {selectedCategory === "all"
+                ? "All Questions"
+                : getCategoryDisplayName(selectedCategory)}
+              {searchTerm && ` containing "${searchTerm}"`}
+              <span className="total-count">
+                {" "}
+                ({filteredQuestions.length} questions)
+              </span>
+            </h2>
+          </div>
 
-      {/* Bulk Import Section */}
-      {showBulkImport && (
+          {/* Bulk Import Section */}
+          {showBulkImport && (
         <div className="bulk-import-section">
           <div className="section-header">
             <h2>Bulk Import Questions</h2>
@@ -597,8 +805,8 @@ const ManageQuestions = ({ user }) => {
         </div>
       )}
 
-      {/* Add/Edit Question Form */}
-      {showAddForm && (
+          {/* Add/Edit Question Form */}
+          {showAddForm && (
         <div className="add-question-form">
           <div className="section-header">
             <h2>{editingQuestion ? "Edit Question" : "Add New Question"}</h2>
@@ -733,84 +941,84 @@ const ManageQuestions = ({ user }) => {
         </div>
       )}
 
-      {/* Questions List */}
-      <div className="questions-list">
-        {loading ? (
-          <div className="loading">Loading questions...</div>
-        ) : (
-          <div className="questions-grid">
-            {filteredQuestions.length === 0 ? (
-              <div className="no-questions">
-                {searchTerm || selectedCategory !== "all"
-                  ? "No questions found matching your criteria."
-                  : "No questions available. Add your first question!"}
-              </div>
+          {/* Questions List */}
+          <div className="questions-list">
+            {loading ? (
+              <div className="loading">Loading questions...</div>
             ) : (
-              filteredQuestions.map((question) => (
-                <div key={question._id} className="question-card">
-                  <h4>{question.question}</h4>
-                  <div className="question-meta">
-                    {question.subCategory && question.subCategory !== 'All' && (
-                      <span className="subcategory">
-                        {question.subCategory}
-                      </span>
-                    )}
-                    <span className="category">
-                      {getCategoryDisplayName(question.category)}
-                    </span>
-                    {question.tags && question.tags.length > 0 && (
-                      <div className="question-tags">
-                        {question.tags.map((tag, index) => (
-                          <span key={index} className="tag">
-                            {tag}
+              <div className="questions-grid">
+                {filteredQuestions.length === 0 ? (
+                  <div className="no-questions">
+                    {searchTerm || selectedCategory !== "all"
+                      ? "No questions found matching your criteria."
+                      : "No questions available. Add your first question!"}
+                  </div>
+                ) : (
+                  filteredQuestions.map((question) => (
+                    <div key={question._id} className="question-card">
+                      <h4>{question.question}</h4>
+                      <div className="question-meta">
+                        {question.subCategory && question.subCategory !== 'All' && (
+                          <span className="subcategory">
+                            {question.subCategory}
                           </span>
+                        )}
+                        <span className="category">
+                          {getCategoryDisplayName(question.category)}
+                        </span>
+                        {question.tags && question.tags.length > 0 && (
+                          <div className="question-tags">
+                            {question.tags.map((tag, index) => (
+                              <span key={index} className="tag">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="question-options">
+                        {question.options.map((option, index) => (
+                          <div
+                            key={index}
+                            className={`option ${
+                              index === question.correctAnswer ? "correct" : ""
+                            }`}
+                          >
+                            {String.fromCharCode(65 + index)}. {option}
+                          </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                  <div className="question-options">
-                    {question.options.map((option, index) => (
-                      <div
-                        key={index}
-                        className={`option ${
-                          index === question.correctAnswer ? "correct" : ""
-                        }`}
-                      >
-                        {String.fromCharCode(65 + index)}. {option}
+                      {question.explanation && (
+                        <div className="explanation">
+                          <strong>Explanation:</strong> {question.explanation}
+                        </div>
+                      )}
+                      <div className="question-footer">
+                        <div className="question-date">
+                          Created:{" "}
+                          {new Date(question.createdAt).toLocaleDateString()}
+                        </div>
+                        <div className="question-actions">
+                          <button
+                            className="btn-edit"
+                            onClick={() => handleEdit(question)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() => handleDeleteClick(question._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  {question.explanation && (
-                    <div className="explanation">
-                      <strong>Explanation:</strong> {question.explanation}
                     </div>
-                  )}
-                  <div className="question-footer">
-                    <div className="question-date">
-                      Created:{" "}
-                      {new Date(question.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="question-actions">
-                      <button
-                        className="btn-edit"
-                        onClick={() => handleEdit(question)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDeleteClick(question._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
+                  ))
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
