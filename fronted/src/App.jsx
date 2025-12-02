@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { InstallPrompt } from "./components/InstallPrompt";
 import Navbar from "./components/Navbar";
+import ContributorNavbar from "./components/ContributorNavbar";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import DailyQuiz from "./pages/DailyQuiz";
@@ -22,6 +23,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminPDFApproval from "./pages/AdminPDFApproval";
 import AdminDeveloperMessages from "./pages/AdminDeveloperMessages";
 import AdminChatManagement from "./pages/AdminChatManagement";
+import AdminUserDetails from "./pages/AdminUserDetails";
 import ProgressTracker from "./pages/ProgressTracker";
 import ProgressTrackerRedirect from "./components/ProgressTrackerRedirect";
 import Leaderboard from "./pages/Leaderboard";
@@ -74,9 +76,11 @@ function App() {
       <div className="app">
         <InstallPrompt />
 
-        {/* Only show regular Navbar for non-admin routes */}
+        {/* Navbars */}
         {user && !window.location.pathname.startsWith("/admin") && (
-          <Navbar user={user} />
+          user.role === 'contributor'
+            ? <ContributorNavbar user={user} />
+            : <Navbar user={user} />
         )}
         {/* REMOVED: AdminNavbar from here */}
 
@@ -204,6 +208,16 @@ function App() {
                 <ProtectedRoute user={user} requireAdmin={true}>
                   <AdminLayout user={user}>
                     <AdminUsers user={user} />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:id"
+              element={
+                <ProtectedRoute user={user} requireAdmin={true}>
+                  <AdminLayout user={user}>
+                    <AdminUserDetails />
                   </AdminLayout>
                 </ProtectedRoute>
               }

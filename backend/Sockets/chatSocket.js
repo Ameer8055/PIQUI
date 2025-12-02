@@ -151,7 +151,11 @@ module.exports = function registerChatSocket(io) {
           isDeleted: false
         })
           .populate('user', 'name avatar')
-          .populate('replyTo', 'message user')
+          .populate({
+            path: 'replyTo',
+            select: 'message user',
+            populate: { path: 'user', select: 'name avatar' }
+          })
           .sort({ isImportant: -1, createdAt: -1 })
           .limit(limit)
           .lean();

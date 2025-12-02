@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AdminUsers.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AdminUsers = ({ user }) => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -199,6 +201,12 @@ const AdminUsers = ({ user }) => {
                   </td>
                   <td>
                     <div className="action-buttons">
+                      <button
+                        className="view-details-btn"
+                        onClick={() => navigate(`/admin/users/${user._id}`)}
+                      >
+                        View Details
+                      </button>
                       <button
                         className={`status-btn ${user.isActive ? 'deactivate' : 'activate'}`}
                         onClick={() => toggleUserStatus(user._id, user.isActive)}

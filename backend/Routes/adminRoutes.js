@@ -405,6 +405,81 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
+// Get full user activity (quizzes, chats, contributions, uploads, dev messages)
+router.get('/users/:id/activity', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const [quizSessions, chatMessages, questions, pdfs, devMessages] = await Promise.all([
+      QuizSession.find({ user: userId }).sort({ createdAt: -1 }).limit(50).lean(),
+      ChatMessage.find({ user: userId, isDeleted: false }).sort({ createdAt: -1 }).limit(100).lean(),
+      Question.find({ createdBy: userId }).sort({ createdAt: -1 }).limit(100).lean(),
+      SharedPDF.find({ uploadedBy: userId }).sort({ createdAt: -1 }).limit(50).lean(),
+      DeveloperMessage.find({ user: userId }).sort({ createdAt: -1 }).limit(50).lean()
+    ]);
+
+    const quizStats = {
+      totalQuizzes: quizSessions.length,
+      totalQuestions: quizSessions.reduce((sum, s) => sum + (s.totalQuestions || 0), 0),
+      totalCorrect: quizSessions.reduce((sum, s) => sum + (s.score || 0), 0),
+      averageScore:
+        quizSessions.length > 0
+          ? quizSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / quizSessions.length
+          : 0,
+      sessions: quizSessions.map((s) => ({
+        id: s._id.toString(),
+        date: s.createdAt,
+        category: s.category,
+        subCategory: s.subCategory,
+        score: s.score,
+        totalQuestions: s.totalQuestions,
+        accuracy: s.accuracy
+      }))
+    };
+
+    const overview = {
+      questionsContributed: questions.length
+    };
+
+    res.json({
+      status: 'success',
+      data: {
+        overview,
+        quizzes: quizStats,
+        chats: chatMessages.map((m) => ({
+          id: m._id.toString(),
+          message: m.message,
+          createdAt: m.createdAt
+        })),
+        questions: questions.map((q) => ({
+          id: q._id.toString(),
+          question: q.question,
+          category: q.category,
+          status: q.status,
+          createdAt: q.createdAt
+        })),
+        uploads: pdfs.map((p) => ({
+          id: p._id.toString(),
+          title: p.title,
+          subject: p.subject,
+          status: p.isApproved ? 'approved' : p.rejectionReason ? 'rejected' : 'pending',
+          createdAt: p.createdAt
+        })),
+        developerMessages: devMessages.map((m) => ({
+          id: m._id.toString(),
+          message: m.message,
+          messageType: m.messageType,
+          status: m.status,
+          createdAt: m.createdAt
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('User activity error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
 // Update user status (activate/deactivate)
 router.put('/users/:id/status', async (req, res) => {
   try {
@@ -1230,7 +1305,11 @@ router.get('/chat/messages', auth, async (req, res) => {
 
     const messages = await ChatMessage.find(query)
       .populate('user', 'name email avatar')
-      .populate('replyTo', 'message user')
+      .populate({
+        path: 'replyTo',
+        select: 'message user',
+        populate: { path: 'user', select: 'name' }
+      })
       .populate('deletedBy', 'name')
       .populate('markedImportantBy', 'name')
       .sort({ isImportant: -1, createdAt: -1 })

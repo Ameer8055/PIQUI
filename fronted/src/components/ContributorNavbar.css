@@ -1,0 +1,14 @@
+.contributor-navbar .contributor-label {
+  color: #00af9c;
+  font-weight: 600;
+  margin-left: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.contributor-navbar .user-role,
+.contributor-navbar .mobile-user-role {
+  font-size: 0.75rem;
+  color: #00af9c;
+}
+
+
