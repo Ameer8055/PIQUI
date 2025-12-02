@@ -14,14 +14,15 @@ const Navbar = ({ user }) => {
   const dropdownRef = useRef(null)
   const mobileMenuRef = useRef(null)
   const [unreadRepliesCount, setUnreadRepliesCount] = useState(0)
+  const [userPoints, setUserPoints] = useState(user?.points || 0)
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
-    { path: '/daily-quiz', label: 'Daily Quiz', icon: '📚' },
-    { path: '/live-quiz', label: 'Quiz Battle', icon: '⚡' },
+    { path: '/dashboard', label: 'Home', icon: '🏠' },
+    { path: '/daily-quiz', label: 'Quiz', icon: '📚' },
+    { path: '/live-quiz', label: 'Battle', icon: '⚡' },
     { path: '/notes', label: 'Notes', icon: '📝' },
     { path: '/chat', label: 'Chat', icon: '💬' },
-    ...(user?.isContributor ? [{ path: '/contributor', label: 'Contribute', icon: '📝' }] : [])
+    ...(user?.isContributor ? [{ path: '/contributor', label: 'Contribute', icon: "🖊️" }] : [])
   ]
 
   // Close dropdown when clicking outside
@@ -61,9 +62,23 @@ const Navbar = ({ user }) => {
     }
   }, [isMobileMenuOpen])
 
-  // Fetch unread replies count
+  // Fetch user points and unread replies count
   useEffect(() => {
     if (!user) return
+
+    const fetchUserPoints = async () => {
+      try {
+        const token = localStorage.getItem('authToken')
+        const response = await axios.get(`${API_BASE_URL}/quiz/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (response.data.status === 'success' && response.data.data.points !== undefined) {
+          setUserPoints(response.data.data.points)
+        }
+      } catch (error) {
+        console.error('Error fetching user points:', error)
+      }
+    }
 
     const fetchUnreadCount = async () => {
       try {
@@ -80,19 +95,29 @@ const Navbar = ({ user }) => {
       }
     }
 
+    fetchUserPoints()
     fetchUnreadCount()
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000)
     
-    // Listen for custom event to update count immediately
+    // Refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchUserPoints()
+      fetchUnreadCount()
+    }, 30000)
+    
+    // Listen for custom events to update counts immediately
     const handleUpdateCount = (event) => {
       setUnreadRepliesCount(event.detail)
     }
+    const handleUpdatePoints = (event) => {
+      setUserPoints(event.detail)
+    }
     window.addEventListener('updateUnreadCount', handleUpdateCount)
+    window.addEventListener('updateUserPoints', handleUpdatePoints)
     
     return () => {
       clearInterval(interval)
       window.removeEventListener('updateUnreadCount', handleUpdateCount)
+      window.removeEventListener('updateUserPoints', handleUpdatePoints)
     }
   }, [user])
 
@@ -168,6 +193,12 @@ const Navbar = ({ user }) => {
 
           {/* Right Side: User Profile + Mobile Menu Toggle */}
           <div className="nav-right">
+            {/* Points Display (Desktop) */}
+            <div className="points-display desktop-points">
+              <span className="points-icon">⭐</span>
+              <span className="points-value">{userPoints || 0}</span>
+            </div>
+
             {/* User Profile with Dropdown (Desktop) */}
             <div className="user-profile desktop-profile" ref={dropdownRef}>
               <div className="user-info" onClick={toggleDropdown}>
@@ -186,6 +217,10 @@ const Navbar = ({ user }) => {
                     <div className="user-details">
                       <div className="user-name-full">{user?.name}</div>
                       <div className="user-email">{user?.email}</div>
+                      <div className="user-points-dropdown">
+                        <span className="points-icon-small">⭐</span>
+                        <span className="points-value-dropdown">{userPoints || 0} points</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -253,6 +288,10 @@ const Navbar = ({ user }) => {
             <div className="mobile-user-details">
               <div className="mobile-user-name">{user?.name}</div>
               <div className="mobile-user-email">{user?.email}</div>
+              <div className="mobile-user-points">
+                <span className="points-icon-small">⭐</span>
+                <span className="points-value-mobile">{userPoints || 0} points</span>
+              </div>
             </div>
           </div>
 

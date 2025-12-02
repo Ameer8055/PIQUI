@@ -225,7 +225,7 @@ router.post('/:id/start', auth, async (req, res) => {
 // Submit AI-generated quiz results
 router.post('/:id/submit', auth, async (req, res) => {
   try {
-    const { answers, timeSpent } = req.body; // answers is array of { questionIndex, userAnswer }
+    const { answers, timeSpent, totalQuestions: requestedTotalQuestions } = req.body; // answers is array of { questionIndex, userAnswer }
     
     const quiz = await QuizFromPDF.findOne({
       _id: req.params.id,
@@ -264,7 +264,8 @@ router.post('/:id/submit', auth, async (req, res) => {
       });
     }
 
-    const totalQuestions = quiz.questions.length;
+    // Use requested totalQuestions if provided (actual questions presented), otherwise use quiz questions length
+    const totalQuestions = requestedTotalQuestions || quiz.questions.length;
     const accuracy = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
 
     // Update quiz session

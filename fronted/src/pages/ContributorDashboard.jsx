@@ -233,8 +233,7 @@ const ContributorDashboard = ({ user }) => {
   return (
     <div className="contributor-dashboard">
       <div className="dashboard-header">
-        <h1>📝 Contributor Dashboard</h1>
-        <p>Manage and submit your quiz questions</p>
+        <h1>Contributor Dashboard</h1>
       </div>
 
       {stats && (
@@ -257,7 +256,7 @@ const ContributorDashboard = ({ user }) => {
           </div>
           <div className="stat-card highlight-card">
             <div className="stat-value">{stats.contributorPoints || 0}</div>
-            <div className="stat-label">Contributor Points</div>
+            <div className="stat-label">Points</div>
           </div>
         </div>
       )}

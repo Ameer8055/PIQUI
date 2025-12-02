@@ -481,7 +481,8 @@ const DailyQuiz = ({ user }) => {
 
         const response = await axios.post(`${API_BASE_URL}/quiz-from-pdf/${aiQuizId}/submit`, {
           answers: answers,
-          timeSpent: timeSpent
+          timeSpent: timeSpent,
+          totalQuestions: questions.length // Send the actual total number of questions presented
         }, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -506,7 +507,8 @@ const DailyQuiz = ({ user }) => {
           timeSpent: timeSpent,
           category: category,
           subCategory: quizSettings.subCategory || 'All',
-          quizType: selectedSubject?.isFunQuiz ? 'fun' : 'competitive'
+          quizType: selectedSubject?.isFunQuiz ? 'fun' : 'competitive',
+          totalQuestions: questions.length // Send the actual total number of questions presented
         }, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -582,7 +584,8 @@ const DailyQuiz = ({ user }) => {
 
   if (showResult) {
     const finalScore = quizResults?.score || 0
-    const totalQuestions = quizResults?.totalQuestions || questions.length || quizSettings.numberOfQuestions
+    // Use quizResults.totalQuestions if available (from backend), otherwise fallback to userAnswers length or questions length
+    const totalQuestions = quizResults?.totalQuestions || userAnswers.length || questions.length || quizSettings.numberOfQuestions
     const accuracy = quizResults?.accuracy || 0
 
     return (
@@ -678,11 +681,6 @@ const DailyQuiz = ({ user }) => {
           <div className="question-section">
             <div className="question-text">
               {question.question}
-              {question.contributorName && (
-                <div className="contributor-badge">
-                  Contributed by {question.contributorName}
-                </div>
-              )}
             </div>
             
             {/* Options */}

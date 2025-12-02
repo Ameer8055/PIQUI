@@ -80,6 +80,13 @@ router.get('/daily', auth, async (req, res) => {
     const questions = await Question.aggregate([
       { $match: query },
       { $sample: { size: parseInt(limit) } },
+      { $lookup: {
+        from: 'users',
+        localField: 'createdBy',
+        foreignField: '_id',
+        as: 'creator'
+      }},
+      { $unwind: { path: '$creator', preserveNullAndEmptyArrays: true }},
       { $project: { 
         _id: 1,
         question: 1, 
@@ -88,7 +95,8 @@ router.get('/daily', auth, async (req, res) => {
         subCategory: 1,
         explanation: 1,
         tags: 1,
-        contributorName: 1
+        contributorName:1,
+        createdBy: 1
       }}
     ]);
     
@@ -110,7 +118,7 @@ router.get('/daily', auth, async (req, res) => {
 // Submit quiz results
 router.post('/submit', auth, async (req, res) => {
   try {
-    const { questions, timeSpent, category, subCategory } = req.body;
+    const { questions, timeSpent, category, subCategory, totalQuestions: requestedTotalQuestions } = req.body;
     const userId = req.user._id;
 
     let score = 0;
@@ -131,7 +139,8 @@ router.post('/submit', auth, async (req, res) => {
       });
     }
 
-    const totalQuestions = questions.length;
+    // Use requested totalQuestions if provided (actual questions presented), otherwise use submitted answers length
+    const totalQuestions = requestedTotalQuestions || questions.length;
     const accuracy = (score / totalQuestions) * 100;
 
     // Save quiz session

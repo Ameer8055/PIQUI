@@ -557,40 +557,40 @@ const ManageQuestions = ({ user }) => {
       {/* All Questions Section */}
       {activeView === 'all' && (
         <>
-      {/* Search and Filter Section */}
-      <div className="filters-section">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search questions by text or tags..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          {searchTerm && (
-            <button className="clear-search" onClick={() => setSearchTerm("")}>
-              ✕
-            </button>
-          )}
-        </div>
+          {/* Search and Filter Section */}
+          <div className="filters-section">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search questions by text or tags..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button className="clear-search" onClick={() => setSearchTerm("")}>
+                  ✕
+                </button>
+              )}
+            </div>
 
-        <div className="category-filters">
-          {categories.map((category) => (
-            <button
-              key={category}
-              className={`category-filter ${
-                selectedCategory === category ? "active" : ""
-              }`}
-              onClick={() => setSelectedCategory(category)}
-            >
-              {getCategoryDisplayName(category)}
-              <span className="question-count">
-                ({getQuestionsCountByCategory(category)})
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+            <div className="category-filters">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className={`category-filter ${
+                    selectedCategory === category ? "active" : ""
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {getCategoryDisplayName(category)}
+                  <span className="question-count">
+                    ({getQuestionsCountByCategory(category)})
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Current Filter Info */}
           <div className="current-filter-info">
@@ -608,29 +608,29 @@ const ManageQuestions = ({ user }) => {
 
           {/* Bulk Import Section */}
           {showBulkImport && (
-        <div className="bulk-import-section">
-          <div className="section-header">
-            <h2>Bulk Import Questions</h2>
-            <button
-              className="btn-close"
-              onClick={() => {
-                setShowBulkImport(false);
-                setBulkImportFile(null);
-                setBulkImportResult(null);
-              }}
-              title="Close"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="bulk-import-info">
-            <h3>📋 Import Format</h3>
-            <p>You can import questions using JSON or CSV format. Download the template to see the required format.</p>
-            
-            <div className="format-examples">
-              <div className="format-example">
-                <h4>JSON Format:</h4>
-                <pre>{`[
+            <div className="bulk-import-section">
+              <div className="section-header">
+                <h2>Bulk Import Questions</h2>
+                <button
+                  className="btn-close"
+                  onClick={() => {
+                    setShowBulkImport(false);
+                    setBulkImportFile(null);
+                    setBulkImportResult(null);
+                  }}
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="bulk-import-info">
+                <h3>📋 Import Format</h3>
+                <p>You can import questions using JSON or CSV format. Download the template to see the required format.</p>
+                
+                <div className="format-examples">
+                  <div className="format-example">
+                    <h4>JSON Format:</h4>
+                    <pre>{`[
   {
     "question": "What is the capital of India?",
     "options": ["Mumbai", "Delhi", "Kolkata", "Chennai"],
@@ -641,305 +641,305 @@ const ManageQuestions = ({ user }) => {
     "tags": ["geography", "india"]
   }
 ]`}</pre>
-              </div>
-              
-              <div className="format-example">
-                <h4>CSV Format:</h4>
-                <p>CSV should have columns: question, option1, option2, option3, option4, correctAnswer, category, subCategory, explanation, tags</p>
-                <p className="note">Note: correctAnswer should be 0-based index (0, 1, 2, or 3)</p>
-              </div>
-            </div>
-
-            <div className="download-template">
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  const template = [
-                    {
-                      question: "Sample Question 1",
-                      options: ["Option A", "Option B", "Option C", "Option D"],
-                      correctAnswer: 0,
-                      category: "india-gk",
-                      subCategory: "All",
-                      explanation: "This is an explanation",
-                      tags: ["sample", "template"]
-                    },
-                    {
-                      question: "Sample Question 2",
-                      options: ["Option A", "Option B", "Option C", "Option D"],
-                      correctAnswer: 1,
-                      category: "mathematics",
-                      subCategory: "Algebra",
-                      explanation: "Another explanation",
-                      tags: ["math", "template"]
-                    }
-                  ];
+                  </div>
                   
-                  const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'questions-template.json';
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                📥 Download JSON Template
-              </button>
-            </div>
-          </div>
-
-          <div className="file-upload-section">
-            <h3>Upload File</h3>
-            <div className="file-upload-area">
-              <input
-                type="file"
-                id="bulk-import-file"
-                accept=".json,.csv"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setBulkImportFile(file);
-                    setBulkImportResult(null);
-                  }
-                }}
-                style={{ display: 'none' }}
-              />
-              <label htmlFor="bulk-import-file" className="file-upload-label">
-                {bulkImportFile ? (
-                  <span>📄 {bulkImportFile.name}</span>
-                ) : (
-                  <span>📁 Click to select JSON or CSV file</span>
-                )}
-              </label>
-              {bulkImportFile && (
-                <button
-                  className="btn-clear"
-                  onClick={() => {
-                    setBulkImportFile(null);
-                    document.getElementById('bulk-import-file').value = '';
-                  }}
-                >
-                  ✕ Clear
-                </button>
-              )}
-            </div>
-
-            {bulkImportFile && (
-              <button
-                className="btn-primary"
-                onClick={handleBulkImport}
-                disabled={bulkImportLoading}
-              >
-                {bulkImportLoading ? '⏳ Importing...' : '🚀 Import Questions'}
-              </button>
-            )}
-          </div>
-
-          {bulkImportResult && (
-            <div className={`import-result ${bulkImportResult.status === 'success' ? 'success' : 'error'}`}>
-              <h3>
-                {bulkImportResult.status === 'success' ? '✅ Import Successful' : '❌ Import Failed'}
-              </h3>
-              {bulkImportResult.data && (
-                <div className="result-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">Total:</span>
-                    <span className="stat-value">{bulkImportResult.data.total || 0}</span>
+                  <div className="format-example">
+                    <h4>CSV Format:</h4>
+                    <p>CSV should have columns: question, option1, option2, option3, option4, correctAnswer, category, subCategory, explanation, tags</p>
+                    <p className="note">Note: correctAnswer should be 0-based index (0, 1, 2, or 3)</p>
                   </div>
-                  <div className="stat-item success">
-                    <span className="stat-label">Imported:</span>
-                    <span className="stat-value">{bulkImportResult.data.imported || 0}</span>
-                  </div>
-                  {bulkImportResult.data.skipped > 0 && (
-                    <div className="stat-item warning">
-                      <span className="stat-label">Skipped:</span>
-                      <span className="stat-value">{bulkImportResult.data.skipped}</span>
-                    </div>
-                  )}
-                  {bulkImportResult.data.failed > 0 && (
-                    <div className="stat-item error">
-                      <span className="stat-label">Failed:</span>
-                      <span className="stat-value">{bulkImportResult.data.failed}</span>
-                    </div>
-                  )}
                 </div>
-              )}
 
-              {bulkImportResult.data?.errors && bulkImportResult.data.errors.length > 0 && (
-                <div className="import-errors">
-                  <h4>Errors:</h4>
-                  <div className="errors-list">
-                    {bulkImportResult.data.errors.slice(0, 10).map((error, index) => (
-                      <div key={index} className="error-item">
-                        <strong>Row {error.row}:</strong> {error.question || 'N/A'}
-                        <ul>
-                          {error.errors?.map((err, i) => (
-                            <li key={i}>{err}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                    {bulkImportResult.data.errors.length > 10 && (
-                      <p className="more-errors">... and {bulkImportResult.data.errors.length - 10} more errors</p>
+                <div className="download-template">
+                  <button
+                    className="btn-secondary"
+                    onClick={() => {
+                      const template = [
+                        {
+                          question: "Sample Question 1",
+                          options: ["Option A", "Option B", "Option C", "Option D"],
+                          correctAnswer: 0,
+                          category: "india-gk",
+                          subCategory: "All",
+                          explanation: "This is an explanation",
+                          tags: ["sample", "template"]
+                        },
+                        {
+                          question: "Sample Question 2",
+                          options: ["Option A", "Option B", "Option C", "Option D"],
+                          correctAnswer: 1,
+                          category: "mathematics",
+                          subCategory: "Algebra",
+                          explanation: "Another explanation",
+                          tags: ["math", "template"]
+                        }
+                      ];
+                      
+                      const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'questions-template.json';
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    📥 Download JSON Template
+                  </button>
+                </div>
+              </div>
+
+              <div className="file-upload-section">
+                <h3>Upload File</h3>
+                <div className="file-upload-area">
+                  <input
+                    type="file"
+                    id="bulk-import-file"
+                    accept=".json,.csv"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setBulkImportFile(file);
+                        setBulkImportResult(null);
+                      }
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="bulk-import-file" className="file-upload-label">
+                    {bulkImportFile ? (
+                      <span>📄 {bulkImportFile.name}</span>
+                    ) : (
+                      <span>📁 Click to select JSON or CSV file</span>
                     )}
-                  </div>
+                  </label>
+                  {bulkImportFile && (
+                    <button
+                      className="btn-clear"
+                      onClick={() => {
+                        setBulkImportFile(null);
+                        document.getElementById('bulk-import-file').value = '';
+                      }}
+                    >
+                      ✕ Clear
+                    </button>
+                  )}
                 </div>
-              )}
 
-              {bulkImportResult.status === 'success' && bulkImportResult.data?.imported > 0 && (
-                <button
-                  className="btn-primary"
-                  onClick={() => {
-                    fetchQuestions();
-                    setShowBulkImport(false);
-                    setBulkImportFile(null);
-                    setBulkImportResult(null);
-                  }}
-                >
-                  Refresh Questions List
-                </button>
+                {bulkImportFile && (
+                  <button
+                    className="btn-primary"
+                    onClick={handleBulkImport}
+                    disabled={bulkImportLoading}
+                  >
+                    {bulkImportLoading ? '⏳ Importing...' : '🚀 Import Questions'}
+                  </button>
+                )}
+              </div>
+
+              {bulkImportResult && (
+                <div className={`import-result ${bulkImportResult.status === 'success' ? 'success' : 'error'}`}>
+                  <h3>
+                    {bulkImportResult.status === 'success' ? '✅ Import Successful' : '❌ Import Failed'}
+                  </h3>
+                  {bulkImportResult.data && (
+                    <div className="result-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">Total:</span>
+                        <span className="stat-value">{bulkImportResult.data.total || 0}</span>
+                      </div>
+                      <div className="stat-item success">
+                        <span className="stat-label">Imported:</span>
+                        <span className="stat-value">{bulkImportResult.data.imported || 0}</span>
+                      </div>
+                      {bulkImportResult.data.skipped > 0 && (
+                        <div className="stat-item warning">
+                          <span className="stat-label">Skipped:</span>
+                          <span className="stat-value">{bulkImportResult.data.skipped}</span>
+                        </div>
+                      )}
+                      {bulkImportResult.data.failed > 0 && (
+                        <div className="stat-item error">
+                          <span className="stat-label">Failed:</span>
+                          <span className="stat-value">{bulkImportResult.data.failed}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {bulkImportResult.data?.errors && bulkImportResult.data.errors.length > 0 && (
+                    <div className="import-errors">
+                      <h4>Errors:</h4>
+                      <div className="errors-list">
+                        {bulkImportResult.data.errors.slice(0, 10).map((error, index) => (
+                          <div key={index} className="error-item">
+                            <strong>Row {error.row}:</strong> {error.question || 'N/A'}
+                            <ul>
+                              {error.errors?.map((err, i) => (
+                                <li key={i}>{err}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        {bulkImportResult.data.errors.length > 10 && (
+                          <p className="more-errors">... and {bulkImportResult.data.errors.length - 10} more errors</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {bulkImportResult.status === 'success' && bulkImportResult.data?.imported > 0 && (
+                    <button
+                      className="btn-primary"
+                      onClick={() => {
+                        fetchQuestions();
+                        setShowBulkImport(false);
+                        setBulkImportFile(null);
+                        setBulkImportResult(null);
+                      }}
+                    >
+                      Refresh Questions List
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
-        </div>
-      )}
 
           {/* Add/Edit Question Form */}
           {showAddForm && (
-        <div className="add-question-form">
-          <div className="section-header">
-            <h2>{editingQuestion ? "Edit Question" : "Add New Question"}</h2>
-            <button
-              className="btn-close"
-              onClick={resetForm}
-              title="Close"
-            >
-              ✕
-            </button>
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Question</label>
-              <textarea
-                value={formData.question}
-                onChange={(e) =>
-                  setFormData({ ...formData, question: e.target.value })
-                }
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Options</label>
-              {formData.options.map((option, index) => (
-                <div key={index} className="option-input-group">
-                  <span className="option-label">
-                    {String.fromCharCode(65 + index)}.
-                  </span>
-                  <input
-                    type="text"
-                    value={option}
-                    onChange={(e) => handleOptionChange(index, e.target.value)}
-                    placeholder={`Option ${index + 1}`}
+            <div className="add-question-form">
+              <div className="section-header">
+                <h2>{editingQuestion ? "Edit Question" : "Add New Question"}</h2>
+                <button
+                  className="btn-close"
+                  onClick={resetForm}
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label>Question</label>
+                  <textarea
+                    value={formData.question}
+                    onChange={(e) =>
+                      setFormData({ ...formData, question: e.target.value })
+                    }
                     required
                   />
                 </div>
-              ))}
-            </div>
 
-            <div className="form-group">
-              <label>Correct Answer</label>
-              <select
-                value={formData.correctAnswer}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    correctAnswer: parseInt(e.target.value),
-                  })
-                }
-              >
-                {formData.options.map((_, index) => (
-                  <option key={index} value={index}>
-                    Option {String.fromCharCode(65 + index)}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div className="form-group">
+                  <label>Options</label>
+                  {formData.options.map((option, index) => (
+                    <div key={index} className="option-input-group">
+                      <span className="option-label">
+                        {String.fromCharCode(65 + index)}.
+                      </span>
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        placeholder={`Option ${index + 1}`}
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => {
-                    const newCategory = e.target.value
-                    const categories = getCategoriesForSubject(newCategory)
-                    setFormData({ 
-                      ...formData, 
-                      category: newCategory,
-                      subCategory: categories[0] || 'All'
-                    })
-                  }}
-                >
-                  {categories
-                    .filter((cat) => cat !== "all")
-                    .map((category) => (
-                      <option key={category} value={category}>
-                        {getCategoryDisplayName(category)}
+                <div className="form-group">
+                  <label>Correct Answer</label>
+                  <select
+                    value={formData.correctAnswer}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        correctAnswer: parseInt(e.target.value),
+                      })
+                    }
+                  >
+                    {formData.options.map((_, index) => (
+                      <option key={index} value={index}>
+                        Option {String.fromCharCode(65 + index)}
                       </option>
                     ))}
-                </select>
-              </div>
+                  </select>
+                </div>
 
-              <div className="form-group">
-                <label>Sub Category</label>
-                <select
-                  value={formData.subCategory}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subCategory: e.target.value })
-                  }
-                >
-                  {getCategoriesForSubject(formData.category).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => {
+                        const newCategory = e.target.value
+                        const categories = getCategoriesForSubject(newCategory)
+                        setFormData({ 
+                          ...formData, 
+                          category: newCategory,
+                          subCategory: categories[0] || 'All'
+                        })
+                      }}
+                    >
+                      {categories
+                        .filter((cat) => cat !== "all")
+                        .map((category) => (
+                          <option key={category} value={category}>
+                            {getCategoryDisplayName(category)}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
 
-            <div className="form-group">
-              <label>Explanation (Optional)</label>
-              <textarea
-                value={formData.explanation}
-                onChange={(e) =>
-                  setFormData({ ...formData, explanation: e.target.value })
-                }
-              />
-            </div>
+                  <div className="form-group">
+                    <label>Sub Category</label>
+                    <select
+                      value={formData.subCategory}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subCategory: e.target.value })
+                      }
+                    >
+                      {getCategoriesForSubject(formData.category).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>Tags (comma separated)</label>
-              <input
-                type="text"
-                value={formData.tags}
-                onChange={(e) =>
-                  setFormData({ ...formData, tags: e.target.value })
-                }
-                placeholder="general-knowledge, fun-quiz, competitive-exam, psc"
-              />
-            </div>
+                <div className="form-group">
+                  <label>Explanation (Optional)</label>
+                  <textarea
+                    value={formData.explanation}
+                    onChange={(e) =>
+                      setFormData({ ...formData, explanation: e.target.value })
+                    }
+                  />
+                </div>
 
-            <div className="form-actions">
-              <button type="button" onClick={resetForm}>
-                Cancel
-              </button>
-              <button type="submit" className="btn-primary">
-                {editingQuestion ? "Update Question" : "Add Question"}
-              </button>
+                <div className="form-group">
+                  <label>Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={formData.tags}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tags: e.target.value })
+                    }
+                    placeholder="general-knowledge, fun-quiz, competitive-exam, psc"
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button type="button" onClick={resetForm}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    {editingQuestion ? "Update Question" : "Add Question"}
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
-      )}
+          )}
 
           {/* Questions List */}
           <div className="questions-list">
@@ -1019,6 +1019,8 @@ const ManageQuestions = ({ user }) => {
               </div>
             )}
           </div>
+        </>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (

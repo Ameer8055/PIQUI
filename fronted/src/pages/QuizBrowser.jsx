@@ -404,6 +404,16 @@ ${question.explanation ? `Current Explanation: ${question.explanation}\n\n` : ''
                 
                 <div className="question-text">
                   {question.question}
+                  {question.createdBy?.name && (
+                    <div className="contributor-badge">
+                      ✨ Contributed by {question.createdBy.name}
+                    </div>
+                  )}
+                  {question.contributorName && !question.createdBy?.name && (
+                    <div className="contributor-badge">
+                      ✨ Contributed by {question.contributorName}
+                    </div>
+                  )}
                 </div>
 
                 <div className="options-list">

@@ -194,6 +194,17 @@
   font-weight: 500;
 }
 
+.contributor-badge {
+  display: block;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  font-weight: 400;
+}
+
 .options-list {
   display: flex;
   flex-direction: column;

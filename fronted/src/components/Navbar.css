@@ -131,6 +131,43 @@
   z-index: 1001;
 }
 
+/* Points Display */
+.points-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  font-weight: 600;
+  color: #92400e;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.2);
+  transition: all 0.3s ease;
+}
+
+.points-display:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.points-icon {
+  font-size: 1.1rem;
+}
+
+.points-value {
+  font-size: 0.95rem;
+}
+
+.desktop-points {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .desktop-points {
+    display: none;
+  }
+}
+
 /* User Profile */
 .user-profile {
   position: relative;
@@ -254,9 +291,31 @@
   font-size: 0.8rem;
   color: #666;
   margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.user-points-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #92400e;
+  width: fit-content;
+}
+
+.points-icon-small {
+  font-size: 0.9rem;
+}
+
+.points-value-dropdown {
+  font-size: 0.85rem;
 }
 
 .dropdown-icon {
@@ -479,6 +538,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-user-points {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #92400e;
+  width: fit-content;
+}
+
+.points-value-mobile {
+  font-size: 0.85rem;
 }
 
 /* Mobile Navigation Links */
