@@ -71,6 +71,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // If true, user is blocked from community chat (reading and sending)
+  isChatBanned: {
+    type: Boolean,
+    default: false
+  },
   isVerified: {
     type: Boolean,
     default: false
@@ -525,19 +530,19 @@ userSchema.methods.updateBattleStats = function(isWinner, isTie = false, pointsE
   if (isTie) {
     this.battleStats.battlesTied += 1;
     this.battleStats.winStreak = 0;
-    // Award 25 points for tie
-    this.points = (this.points || 0) + 25;
+    // Minimal points for tie
+    this.points = (this.points || 0) + 1;
   } else if (isWinner) {
     this.battleStats.battlesWon += 1;
     this.battleStats.winStreak += 1;
     this.battleStats.bestWinStreak = Math.max(this.battleStats.bestWinStreak, this.battleStats.winStreak);
-    // Award 100 points for win
-    this.points = (this.points || 0) + 100;
+    // Minimal points for win
+    this.points = (this.points || 0) + 2;
   } else {
     this.battleStats.battlesLost += 1;
     this.battleStats.winStreak = 0;
-    // Award 10 points for participation
-    this.points = (this.points || 0) + 10;
+    // No extra participation points for loss (keep points valuable)
+    this.points = (this.points || 0);
   }
   
   this.battleStats.totalBattlePoints += pointsEarned;

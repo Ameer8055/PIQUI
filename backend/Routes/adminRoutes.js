@@ -6,6 +6,7 @@ const { auth } = require('../Middlewares/authMiddleware');
 const Question = require('../Models/Question');
 const User = require('../Models/User');
 const QuizSession = require('../Models/QuizSession'); // You'll need to create this model
+const HostedQuiz = require('../Models/HostedQuiz');
 const SharedPDF = require('../Models/SharedPDF');
 const DeveloperMessage = require('../Models/DeveloperMessage');
 const ChatMessage = require('../Models/ChatMessage');
@@ -173,6 +174,71 @@ router.get('/questions/pending', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching pending questions:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Get pending hosted quizzes (for admin approval)
+router.get('/hosted-quizzes/pending', async (req, res) => {
+  try {
+    const quizzes = await HostedQuiz.find({ status: 'pending', isActive: true })
+      .populate('host', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      status: 'success',
+      data: quizzes
+    });
+  } catch (error) {
+    console.error('Error fetching pending hosted quizzes:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Approve a hosted quiz
+router.post('/hosted-quizzes/:id/approve', async (req, res) => {
+  try {
+    const quiz = await HostedQuiz.findById(req.params.id).populate('host');
+
+    if (!quiz) {
+      return res.status(404).json({ status: 'error', message: 'Hosted quiz not found' });
+    }
+
+    quiz.status = 'approved';
+    quiz.isActive = true;
+    await quiz.save();
+
+    res.json({
+      status: 'success',
+      message: 'Hosted quiz approved',
+      data: quiz
+    });
+  } catch (error) {
+    console.error('Error approving hosted quiz:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Reject a hosted quiz
+router.post('/hosted-quizzes/:id/reject', async (req, res) => {
+  try {
+    const quiz = await HostedQuiz.findById(req.params.id).populate('host');
+
+    if (!quiz) {
+      return res.status(404).json({ status: 'error', message: 'Hosted quiz not found' });
+    }
+
+    quiz.status = 'rejected';
+    quiz.isActive = false;
+    await quiz.save();
+
+    res.json({
+      status: 'success',
+      message: 'Hosted quiz rejected',
+      data: quiz
+    });
+  } catch (error) {
+    console.error('Error rejecting hosted quiz:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 });
@@ -576,6 +642,31 @@ router.put('/users/:id/contributor', async (req, res) => {
     res.json({
       status: 'success',
       message: `Contributor access ${user.isContributor ? 'enabled' : 'disabled'} successfully`,
+      data: user
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Restrict/unrestrict a user from community chat
+router.put('/users/:id/chat-ban', async (req, res) => {
+  try {
+    const { isChatBanned } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isChatBanned: !!isChatBanned },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    res.json({
+      status: 'success',
+      message: `User chat access ${user.isChatBanned ? 'restricted' : 'restored'} successfully`,
       data: user
     });
   } catch (error) {

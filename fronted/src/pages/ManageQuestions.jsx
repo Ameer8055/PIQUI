@@ -22,7 +22,9 @@ const ManageQuestions = ({ user }) => {
   const [bulkImportResult, setBulkImportResult] = useState(null);
   const [pendingQuestions, setPendingQuestions] = useState([]);
   const [loadingPending, setLoadingPending] = useState(false);
-  const [activeView, setActiveView] = useState('all'); // 'all' or 'pending'
+  const [activeView, setActiveView] = useState('all'); // 'all' | 'pending' | 'hosted'
+  const [hostedQuizzes, setHostedQuizzes] = useState([]);
+  const [loadingHosted, setLoadingHosted] = useState(false);
 
   const categories = [
     "all",
@@ -59,11 +61,14 @@ const ManageQuestions = ({ user }) => {
   useEffect(() => {
     fetchQuestions();
     fetchPendingQuestions();
+    fetchHostedQuizzes();
   }, []);
 
   useEffect(() => {
     if (activeView === 'pending') {
       fetchPendingQuestions();
+    } else if (activeView === 'hosted') {
+      fetchHostedQuizzes();
     }
   }, [activeView]);
 
@@ -103,6 +108,53 @@ const ManageQuestions = ({ user }) => {
       toast.error("Failed to fetch pending questions");
     } finally {
       setLoadingPending(false);
+    }
+  };
+
+  const fetchHostedQuizzes = async () => {
+    setLoadingHosted(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(`${API_BASE_URL}/admin/hosted-quizzes/pending`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.status === 'success') {
+        setHostedQuizzes(response.data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching hosted quizzes:', error);
+      toast.error('Failed to fetch hosted quizzes');
+    } finally {
+      setLoadingHosted(false);
+    }
+  };
+
+  const handleHostedApprove = async (hostedId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.post(`${API_BASE_URL}/admin/hosted-quizzes/${hostedId}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Hosted quiz approved successfully');
+      fetchHostedQuizzes();
+    } catch (error) {
+      console.error('Error approving hosted quiz:', error);
+      toast.error(error.response?.data?.message || 'Failed to approve hosted quiz');
+    }
+  };
+
+  const handleHostedReject = async (hostedId) => {
+    if (!window.confirm('Are you sure you want to reject this hosted quiz?')) return;
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.post(`${API_BASE_URL}/admin/hosted-quizzes/${hostedId}/reject`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Hosted quiz rejected');
+      fetchHostedQuizzes();
+    } catch (error) {
+      console.error('Error rejecting hosted quiz:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject hosted quiz');
     }
   };
 
@@ -437,7 +489,104 @@ const ManageQuestions = ({ user }) => {
             <span className="pending-badge">{pendingQuestions.length}</span>
           )}
         </button>
+        <button
+          className={`view-tab ${activeView === 'hosted' ? 'active' : ''}`}
+          onClick={() => setActiveView('hosted')}
+        >
+          👥 Hosted Quiz Approvals
+          {hostedQuizzes.length > 0 && (
+            <span className="pending-badge">{hostedQuizzes.length}</span>
+          )}
+        </button>
       </div>
+
+      {/* Hosted Quiz Approvals Section */}
+      {activeView === 'hosted' && (
+        <div className="pending-approvals-section">
+          <div className="section-header">
+            <h2>Pending Hosted Quiz Matches</h2>
+            <p>Review and approve hosted quiz sessions created by contributors</p>
+          </div>
+
+          {loadingHosted ? (
+            <div className="loading">Loading hosted quizzes...</div>
+          ) : hostedQuizzes.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">✅</div>
+              <p>No pending hosted quizzes to review!</p>
+            </div>
+          ) : (
+            <div className="pending-questions-list">
+              {hostedQuizzes.map((quiz) => (
+                <div key={quiz._id} className="pending-question-card">
+                  <div className="question-card-header">
+                    <div className="contributor-info">
+                      <div className="contributor-avatar">
+                        {quiz.host?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div className="contributor-details">
+                        <div className="contributor-name">
+                          {quiz.host?.name || 'Unknown User'}
+                        </div>
+                        <div className="contributor-email">
+                          {quiz.host?.email || 'N/A'}
+                        </div>
+                        <div className="submission-date">
+                          Created: {new Date(quiz.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="question-status-badge pending">
+                      Pending Hosted Quiz
+                    </div>
+                  </div>
+
+                  <div className="question-content">
+                    <div className="question-meta">
+                      <span className="category-badge">{getCategoryDisplayName(quiz.category)}</span>
+                      {quiz.subCategory && quiz.subCategory !== 'All' && (
+                        <span className="subcategory-badge">{quiz.subCategory}</span>
+                      )}
+                    </div>
+
+                    <div className="question-text">
+                      <strong>Title:</strong>
+                      <p>{quiz.title}</p>
+                    </div>
+
+                    {quiz.description && (
+                      <div className="question-explanation">
+                        <strong>Description:</strong>
+                        <p>{quiz.description}</p>
+                      </div>
+                    )}
+
+                    <div className="question-explanation">
+                      <strong>Number of Questions:</strong>
+                      <p>{quiz.questions?.length || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="question-actions-pending">
+                    <button
+                      className="btn-approve"
+                      onClick={() => handleHostedApprove(quiz._id)}
+                    >
+                      ✅ Approve
+                    </button>
+                    <button
+                      className="btn-reject"
+                      onClick={() => handleHostedReject(quiz._id)}
+                    >
+                      ❌ Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pending Approvals Section */}
       {activeView === 'pending' && (

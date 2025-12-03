@@ -10,6 +10,14 @@ const quizSessionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  // Optional reference to a hosted quiz match.
+  // When set, this quiz session belongs to a specific hosted quiz
+  // and can be used for rankings/leaderboards for that match.
+  hostedQuiz: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HostedQuiz',
+    default: null
+  },
   questions: [{
     question: {
       type: mongoose.Schema.Types.ObjectId,

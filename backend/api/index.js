@@ -165,7 +165,7 @@ async function connectToDatabase() {
 }
 
 // Import routes with error handling - load each route individually to catch specific errors
-let authRoutes, adminRoutes, quizRoutes, chatRoutes, sharedPDFRoutes, typedNoteRoutes, quizFromPDFRoutes, developerMessageRoutes;
+let authRoutes, adminRoutes, quizRoutes, chatRoutes, sharedPDFRoutes, typedNoteRoutes, quizFromPDFRoutes, developerMessageRoutes, contributorRoutes, hostedQuizRoutes;
 const routeErrors = [];
 
 try {
@@ -232,6 +232,22 @@ try {
   routeErrors.push('developerMessageRoutes: ' + error.message);
 }
 
+try {
+  contributorRoutes = require('../Routes/contributorRoutes');
+  console.log('✓ contributorRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading contributorRoutes:', error.message);
+  routeErrors.push('contributorRoutes: ' + error.message);
+}
+
+try {
+  hostedQuizRoutes = require('../Routes/hostedQuizRoutes');
+  console.log('✓ hostedQuizRoutes loaded');
+} catch (error) {
+  console.error('✗ Error loading hostedQuizRoutes:', error.message);
+  routeErrors.push('hostedQuizRoutes: ' + error.message);
+}
+
 // If any routes failed to load, add an error endpoint
 if (routeErrors.length > 0) {
   app.get('/api/route-errors', (req, res) => {
@@ -269,7 +285,9 @@ app.get('/api/health', async (req, res) => {
         sharedPDF: !!sharedPDFRoutes,
         typedNote: !!typedNoteRoutes,
         quizFromPDF: !!quizFromPDFRoutes,
-        developerMessage: !!developerMessageRoutes
+        developerMessage: !!developerMessageRoutes,
+        contributor: !!contributorRoutes,
+        hostedQuiz: !!hostedQuizRoutes
       },
       routeErrors: routeErrors.length > 0 ? routeErrors : null
     });
@@ -339,6 +357,8 @@ if (sharedPDFRoutes) app.use('/api/shared-pdfs', sharedPDFRoutes);
 if (typedNoteRoutes) app.use('/api/typed-notes', typedNoteRoutes);
 if (quizFromPDFRoutes) app.use('/api/quiz-from-pdf', quizFromPDFRoutes);
 if (developerMessageRoutes) app.use('/api/developer-messages', developerMessageRoutes);
+if (contributorRoutes) app.use('/api/contributor', contributorRoutes);
+if (hostedQuizRoutes) app.use('/api/hosted-quizzes', hostedQuizRoutes);
 
 // Serve static files (if needed)
 // Note: For production, use Cloudinary or similar for file storage

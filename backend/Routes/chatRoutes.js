@@ -6,6 +6,12 @@ const { auth } = require('../Middlewares/authMiddleware');
 // Get chat history
 router.get('/history', auth, async (req, res) => {
   try {
+    if (req.user.isChatBanned) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You have been restricted from accessing community chat'
+      });
+    }
     const { limit = 50, before } = req.query;
     const maxLimit = Math.min(parseInt(limit), 100);
 

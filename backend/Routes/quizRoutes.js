@@ -115,10 +115,10 @@ router.get('/daily', auth, async (req, res) => {
   }
 });
 
-// Submit quiz results
+// Submit quiz results (daily/fun/hosted quizzes)
 router.post('/submit', auth, async (req, res) => {
   try {
-    const { questions, timeSpent, category, subCategory, totalQuestions: requestedTotalQuestions } = req.body;
+    const { questions, timeSpent, category, subCategory, totalQuestions: requestedTotalQuestions, hostedQuizId } = req.body;
     const userId = req.user._id;
 
     let score = 0;
@@ -146,6 +146,7 @@ router.post('/submit', auth, async (req, res) => {
     // Save quiz session
     const quizSession = new QuizSession({
       user: userId,
+      hostedQuiz: hostedQuizId || null,
       questions: questionDetails,
       score: score,
       totalQuestions: totalQuestions,
@@ -158,6 +159,18 @@ router.post('/submit', auth, async (req, res) => {
 
     await quizSession.save();
 
+    // Update lastSessionAt on hosted quiz for cleanup tracking
+    if (hostedQuizId) {
+      try {
+        const HostedQuiz = require('../Models/HostedQuiz');
+        await HostedQuiz.findByIdAndUpdate(hostedQuizId, {
+          lastSessionAt: new Date()
+        });
+      } catch (updateErr) {
+        console.error('Error updating hosted quiz lastSessionAt:', updateErr);
+      }
+    }
+
     // Update user stats
     await updateUserStats(userId, score, totalQuestions, timeSpent);
 
@@ -168,7 +181,8 @@ router.post('/submit', auth, async (req, res) => {
         totalQuestions,
         accuracy: Math.round(accuracy),
         timeSpent,
-        sessionId: quizSession._id
+        sessionId: quizSession._id,
+        hostedQuizId: hostedQuizId || null
       }
     });
 
@@ -370,14 +384,84 @@ router.get('/battles/history', auth, async (req, res) => {
   }
 });
 
+// Get combined recent activity (quiz sessions + quiz battles)
+router.get('/recent-activity', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const limit = parseInt(req.query.limit, 10) || 10;
+
+    // Recent quiz sessions for this user
+    const sessions = await QuizSession.find({ user: userId, completed: true })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const quizActivities = sessions.map(session => ({
+      type: 'quiz',
+      date: session.createdAt || session.dateTaken,
+      category: session.category,
+      subCategory: session.subCategory,
+      score: session.score,
+      totalQuestions: session.totalQuestions,
+      accuracy: Math.round(session.accuracy || 0),
+      hostedQuizId: session.hostedQuiz || null
+    }));
+
+    // Recent quiz battles (reuse same logic as /battles/history but smaller default)
+    const battles = await QuizBattle.find({ 'players.user': userId })
+      .sort({ startedAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const battleActivities = battles.map(battle => {
+      const player = battle.players.find(p => p.user.toString() === userId.toString());
+      const opponent = battle.players.find(p => p.user.toString() !== userId.toString());
+
+      return {
+        type: 'battle',
+        date: battle.endedAt || battle.startedAt,
+        subject: battle.subject,
+        score: player?.score || 0,
+        opponentScore: opponent?.score || 0,
+        opponent: opponent
+          ? {
+              userId: opponent.user,
+              name: opponent.name,
+              avatar: opponent.avatar
+            }
+          : null,
+        result: battle.isTie
+          ? 'tie'
+          : battle.winner && battle.winner.toString() === userId.toString()
+            ? 'win'
+            : 'loss'
+      };
+    });
+
+    // Combine, sort by date desc, and limit overall
+    const combined = [...quizActivities, ...battleActivities]
+      .filter(a => a.date)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, limit);
+
+    res.json({
+      status: 'success',
+      data: combined
+    });
+  } catch (error) {
+    console.error('Recent activity error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
 // Helper function to update user stats
 const updateUserStats = async (userId, score, totalQuestions, timeSpent) => {
   try {
     const User = require('../Models/User');
     const user = await User.findById(userId);
     
-    // Calculate points: 10 points per correct answer
-    const pointsEarned = score * 10;
+    // Calculate points: 1 point per correct answer (minimal, more valuable scores)
+    const pointsEarned = score * 1;
     
     // Update basic stats
     user.stats.totalQuizzesTaken += 1;
@@ -427,10 +511,10 @@ const updateUserStats = async (userId, score, totalQuestions, timeSpent) => {
     dailyProgress.studyTime += Math.round(timeSpent / 60);
     
     // Check if daily goal is achieved
-    if (dailyProgress.questionsCompleted >= dailyProgress.dailyGoal && !dailyProgress.goalsAchieved) {
+      if (dailyProgress.questionsCompleted >= dailyProgress.dailyGoal && !dailyProgress.goalsAchieved) {
       dailyProgress.goalsAchieved = true;
-      // Bonus points for completing daily goal
-      const bonusPoints = 50;
+      // Small bonus points for completing daily goal
+      const bonusPoints = 5;
       user.points += bonusPoints;
       dailyProgress.pointsEarned += bonusPoints;
       

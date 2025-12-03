@@ -52,6 +52,7 @@ const Dashboard = ({ user }) => {
       if (leaderboardResponse.data.status === 'success') {
         setUserRank(leaderboardResponse.data.data.currentUserRank)
       }
+
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
     } finally {
@@ -179,7 +180,6 @@ const Dashboard = ({ user }) => {
 
       {/* Quick Actions Grid */}
       <section className="quick-actions">
-        <h2>Quick Actions</h2>
         <div className="features-grid">
           {features.map(feature => (
             <div 
@@ -205,28 +205,6 @@ const Dashboard = ({ user }) => {
         </div>
       </section>
 
-      {/* Recent Activity */}
-      <section className="recent-activity">
-        <h2>Recent Activity</h2>
-        <div className="activity-list">
-          <div className="activity-item">
-            <div className="activity-icon">🎉</div>
-            <div className="activity-content">
-              <p>Welcome to PIQUI!</p>
-              <span>Just now</span>
-            </div>
-          </div>
-          <div className="activity-placeholder">
-            <p>Complete your first quiz to see your activity here!</p>
-            <button 
-              className="start-quiz-btn"
-              onClick={() => navigate('/daily-quiz')}
-            >
-              Start Your First Quiz
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

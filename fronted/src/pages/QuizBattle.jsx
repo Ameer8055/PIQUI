@@ -447,65 +447,6 @@ const QuizBattle = ({ user }) => {
 
       {battleStatus === 'active' && battleInfo && currentQuestion && (
         <div className="battle-arena">
-          {/* Stickman Gunfight Animation */}
-          <div className="stickman-battle">
-            <div className="stickman-container player-left">
-              <div className={`stickman ${questionResult && questionResult.players?.find(p => p.userId === userId)?.isCorrect ? 'shooting' : ''}`}>
-                <div className="stickman-head"></div>
-                <div className="stickman-body">
-                  <div className="stickman-arm stickman-arm-left">
-                    <div className="stickman-hand"></div>
-                  </div>
-                  <div className="stickman-arm stickman-arm-right">
-                    <div className="stickman-hand stickman-gun"></div>
-                    {questionResult && questionResult.players?.find(p => p.userId === userId)?.isCorrect && (
-                      <div className="bullet"></div>
-                    )}
-                  </div>
-                </div>
-                <div className="stickman-legs">
-                  <div className="stickman-leg"></div>
-                  <div className="stickman-leg"></div>
-                </div>
-              </div>
-              <div className="stickman-label">You</div>
-            </div>
-            
-            <div className="battle-status">
-              <div className="question-progress">
-                Q{currentQuestionIndex + 1} of {battleInfo.questionCount}
-              </div>
-              <div className={`timer ${questionTimer <= 3 ? 'urgent' : ''}`}>
-                ⏱️ {questionTimer}s
-              </div>
-              <div className="battle-subject">
-                {currentSubject?.name}
-              </div>
-            </div>
-
-            <div className="stickman-container player-right">
-              <div className={`stickman stickman-right ${questionResult && questionResult.players?.find(p => p.userId === battleInfo.opponent?.userId)?.isCorrect ? 'shooting' : ''}`}>
-                <div className="stickman-head"></div>
-                <div className="stickman-body">
-                  <div className="stickman-arm stickman-arm-left">
-                    <div className="stickman-hand stickman-gun"></div>
-                    {questionResult && questionResult.players?.find(p => p.userId === battleInfo.opponent?.userId)?.isCorrect && (
-                      <div className="bullet bullet-right"></div>
-                    )}
-                  </div>
-                  <div className="stickman-arm stickman-arm-right">
-                    <div className="stickman-hand"></div>
-                  </div>
-                </div>
-                <div className="stickman-legs">
-                  <div className="stickman-leg"></div>
-                  <div className="stickman-leg"></div>
-                </div>
-              </div>
-              <div className="stickman-label">{battleInfo.opponent?.name}</div>
-            </div>
-          </div>
-
           <div className="battle-header">
             <div className="player-info player-you">
               <div className="player-avatar">You</div>
@@ -517,6 +458,18 @@ const QuizBattle = ({ user }) => {
               <div className="player-avatar">OP</div>
               <div className="player-name">{battleInfo.opponent?.name}</div>
               <div className="player-score">{scores[battleInfo.opponent?.userId] || 0}</div>
+            </div>
+
+            <div className="battle-status">
+              <div className="question-progress">
+                Q{currentQuestionIndex + 1} of {battleInfo.questionCount}
+              </div>
+              <div className={`timer ${questionTimer <= 3 ? 'urgent' : ''}`}>
+                ⏱️ {questionTimer}s
+              </div>
+              <div className="battle-subject">
+                {currentSubject?.name}
+              </div>
             </div>
           </div>
 

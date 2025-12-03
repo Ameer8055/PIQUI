@@ -79,6 +79,7 @@ const typedNoteRoutes = require('./Routes/typedNoteRoutes');
 const quizFromPDFRoutes = require('./Routes/quizFromPDFRoutes');
 const developerMessageRoutes = require('./Routes/developerMessageRoutes');
 const contributorRoutes = require('./Routes/contributorRoutes');
+const hostedQuizRoutes = require('./Routes/hostedQuizRoutes');
 const path = require('path');
 
 app.use('/api/auth', authRoutes);
@@ -90,6 +91,7 @@ app.use('/api/typed-notes', typedNoteRoutes);
 app.use('/api/quiz-from-pdf', quizFromPDFRoutes);
 app.use('/api/developer-messages', developerMessageRoutes);
 app.use('/api/contributor', contributorRoutes);
+app.use('/api/hosted-quizzes', hostedQuizRoutes);
 
 // Serve static files from Public directory
 app.use('/uploads', express.static(path.join(__dirname, 'Public', 'uploads')));
@@ -108,6 +110,8 @@ const registerQuizBattleSocket = require('./Sockets/quizBattleSocket');
 const registerChatSocket = require('./Sockets/chatSocket');
 const cron = require('node-cron');
 const { cleanupOldChatMessages } = require('./Utils/chatCleanup');
+const HostedQuiz = require('./Models/HostedQuiz');
+const QuizSession = require('./Models/QuizSession');
 
 registerQuizBattleSocket(io);
 registerChatSocket(io);
@@ -116,6 +120,50 @@ registerChatSocket(io);
 cron.schedule('0 2 * * *', async () => {
   console.log('Running scheduled chat cleanup...');
   await cleanupOldChatMessages();
+}, {
+  scheduled: true,
+  timezone: "Asia/Kolkata"
+});
+
+// Auto-delete hosted quiz sessions and hosted quiz records older than 30 days
+cron.schedule('30 2 * * *', async () => {
+  try {
+    console.log('Running scheduled cleanup of old hosted quiz sessions...');
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+
+    // Delete quiz sessions linked to hosted quizzes older than 30 days
+    const oldHostedQuizzes = await HostedQuiz.find({
+      $or: [
+        { lastSessionAt: { $lt: cutoff } },
+        { lastSessionAt: null, createdAt: { $lt: cutoff } }
+      ]
+    }).select('_id');
+
+    const oldIds = oldHostedQuizzes.map(q => q._id);
+
+    if (oldIds.length > 0) {
+      const sessionResult = await QuizSession.deleteMany({ hostedQuiz: { $in: oldIds } });
+      console.log(`Deleted ${sessionResult.deletedCount} old hosted quiz sessions`);
+    }
+
+    // Soft-delete hosted quizzes themselves (keep questions intact)
+    const hostedResult = await HostedQuiz.updateMany(
+      {
+        _id: { $in: oldIds },
+        isActive: true
+      },
+      {
+        $set: {
+          isActive: false,
+          deletedAt: new Date()
+        }
+      }
+    );
+    console.log(`Soft-deleted ${hostedResult.modifiedCount || 0} hosted quizzes older than 30 days`);
+  } catch (err) {
+    console.error('Error cleaning up old hosted quiz sessions:', err);
+  }
 }, {
   scheduled: true,
   timezone: "Asia/Kolkata"

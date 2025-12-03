@@ -116,10 +116,14 @@ module.exports = function registerChatSocket(io) {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      const user = await User.findById(decoded.userId).select('name avatar isActive role');
+      const user = await User.findById(decoded.userId).select('name avatar isActive role isChatBanned');
       
       if (!user || !user.isActive) {
         return next(new Error('User not authorized for chat'));
+      }
+
+      if (user.isChatBanned) {
+        return next(new Error('You have been restricted from accessing community chat'));
       }
 
       socket.user = user;

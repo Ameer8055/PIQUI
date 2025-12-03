@@ -32,7 +32,12 @@ const DailyQuiz = ({ user }) => {
   const [loadingCounts, setLoadingCounts] = useState(true)
   const [isAIGeneratedQuiz, setIsAIGeneratedQuiz] = useState(false)
   const [aiQuizId, setAiQuizId] = useState(null)
-  const [activeTab, setActiveTab] = useState('competitive') // 'competitive' or 'fun'
+  const [activeTab, setActiveTab] = useState('competitive') // 'competitive' | 'fun' | 'hosted'
+  const [hostedQuizzes, setHostedQuizzes] = useState([])
+  const [loadingHostedQuizzes, setLoadingHostedQuizzes] = useState(true)
+  const [hostedQuizError, setHostedQuizError] = useState(null)
+  const [hostedQuizId, setHostedQuizId] = useState(null)
+  const [hostedQuizInfo, setHostedQuizInfo] = useState(null)
 
   // Competitive Exam Subjects
   const competitiveSubjects = [
@@ -336,6 +341,45 @@ const DailyQuiz = ({ user }) => {
     fetchQuestionCounts()
   }, [])
 
+  // Fetch active hosted quizzes
+  useEffect(() => {
+    const fetchHostedQuizzes = async () => {
+      try {
+        const token = getAuthToken()
+        if (!token) {
+          setLoadingHostedQuizzes(false)
+          return
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/hosted-quizzes`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.data.status === 'success') {
+          setHostedQuizzes(response.data.data || [])
+        }
+      } catch (err) {
+        console.error('Error fetching hosted quizzes:', err)
+        setHostedQuizError('Failed to load hosted quizzes.')
+      } finally {
+        setLoadingHostedQuizzes(false)
+      }
+    }
+
+    fetchHostedQuizzes()
+  }, [])
+
+  // Start hosted quiz if navigated with hostedQuizId
+  useEffect(() => {
+    if (location.state && location.state.hostedQuizId) {
+      const id = location.state.hostedQuizId
+      startHostedQuiz(id)
+      navigate(location.pathname, { replace: true, state: null })
+    }
+  }, [location.state, navigate, location.pathname])
+
   useEffect(() => {
     let timer
     if (quizStarted && timeLeft > 0) {
@@ -446,6 +490,69 @@ const DailyQuiz = ({ user }) => {
     fetchQuestions()
   }
 
+  const startHostedQuiz = async (id) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const token = getAuthToken()
+      if (!token) {
+        setError('You are not authenticated. Please sign in again.')
+        setLoading(false)
+        setTimeout(() => {
+          navigate('/signin')
+        }, 2000)
+        return
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/hosted-quizzes/${id}/questions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.data.status === 'success') {
+        const { quiz, questions: quizQuestions } = response.data.data
+        if (!quizQuestions || quizQuestions.length === 0) {
+          setError('No questions available for this hosted quiz.')
+          setLoading(false)
+          return
+        }
+
+        setQuestions(quizQuestions)
+        setHostedQuizId(quiz.id)
+        setHostedQuizInfo(quiz)
+        setQuizStarted(true)
+        setShowSettings(false)
+        setCurrentQuestion(0)
+        setScore(0)
+        setTimeLeft(quizSettings.timePerQuestion)
+        setSelectedAnswer(null)
+        setShowResult(false)
+        setUserAnswers([])
+        setStartTime(Date.now())
+        setIsAIGeneratedQuiz(false)
+
+        // Set a synthetic subject for display
+        setSelectedSubject({
+          id: -1,
+          name: quiz.title || 'Hosted Quiz',
+          description: quiz.description || 'User hosted quiz',
+          icon: '👥',
+          color: '#10B981',
+          isFunQuiz: false
+        })
+      } else {
+        setError('Failed to start hosted quiz. Please try again.')
+      }
+    } catch (err) {
+      console.error('Error starting hosted quiz:', err)
+      setError(err.response?.data?.message || 'Failed to start hosted quiz. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleAnswerSelect = (answerIndex) => {
     setSelectedAnswer(answerIndex)
   }
@@ -508,7 +615,8 @@ const DailyQuiz = ({ user }) => {
           category: category,
           subCategory: quizSettings.subCategory || 'All',
           quizType: selectedSubject?.isFunQuiz ? 'fun' : 'competitive',
-          totalQuestions: questions.length // Send the actual total number of questions presented
+          totalQuestions: questions.length, // Send the actual total number of questions presented
+          hostedQuizId: hostedQuizId || null
         }, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -516,7 +624,32 @@ const DailyQuiz = ({ user }) => {
         })
 
         if (response.data.status === 'success') {
-          setQuizResults(response.data.data)
+          let resultData = response.data.data
+
+          // If this was a hosted quiz, also fetch ranking
+          if (hostedQuizId) {
+            try {
+              const rankingResponse = await axios.get(`${API_BASE_URL}/hosted-quizzes/${hostedQuizId}/results`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              })
+
+              if (rankingResponse.data.status === 'success') {
+                resultData = {
+                  ...resultData,
+                  hostedQuizId,
+                  hostedQuizInfo,
+                  ranking: rankingResponse.data.data.ranking || [],
+                  currentUserRanking: rankingResponse.data.data.currentUser || null
+                }
+              }
+            } catch (rankingErr) {
+              console.error('Error fetching hosted quiz ranking:', rankingErr)
+            }
+          }
+
+          setQuizResults(resultData)
           setShowResult(true)
           setQuizStarted(false)
         } else {
@@ -572,6 +705,8 @@ const DailyQuiz = ({ user }) => {
     setQuestions([])
     setUserAnswers([])
     setQuizResults(null)
+    setHostedQuizId(null)
+    setHostedQuizInfo(null)
     setError(null)
     setCurrentQuestion(0)
     setScore(0)
@@ -587,34 +722,75 @@ const DailyQuiz = ({ user }) => {
     // Use quizResults.totalQuestions if available (from backend), otherwise fallback to userAnswers length or questions length
     const totalQuestions = quizResults?.totalQuestions || userAnswers.length || questions.length || quizSettings.numberOfQuestions
     const accuracy = quizResults?.accuracy || 0
+    const ranking = quizResults?.ranking || []
+    const currentUserRanking = quizResults?.currentUserRanking || null
 
     return (
       <div className="daily-quiz-page">
         <div className="quiz-result">
-          <div className="result-card">
-            <div className="result-icon">🎉</div>
-            <h2>Quiz Completed!</h2>
-            <div className="score-display">
-              Your Score: <span className="score-value">{finalScore}</span> / {totalQuestions}
-            </div>
-            <div className="result-details">
-              <p>Subject: <strong>{selectedSubject?.name}</strong></p>
-              <p>Type: <strong>{selectedSubject?.isFunQuiz ? 'Fun Quiz' : 'Competitive Exam'}</strong></p>
-              <p>Accuracy: <strong>{accuracy}%</strong></p>
-              {quizResults?.timeSpent && (
-                <p>Time Taken: <strong>{Math.round(quizResults.timeSpent / 60)} min {quizResults.timeSpent % 60} sec</strong></p>
+          <div className="result-layout">
+            <div className="result-card">
+              <div className="result-icon">🎉</div>
+              <h2>Quiz Completed!</h2>
+              <div className="score-display">
+                Your Score: <span className="score-value">{finalScore}</span> / {totalQuestions}
+              </div>
+              <div className="result-details">
+                <p>Subject: <strong>{selectedSubject?.name}</strong></p>
+                <p>Type: <strong>{hostedQuizId ? 'Hosted Quiz' : (selectedSubject?.isFunQuiz ? 'Fun Quiz' : 'Competitive Exam')}</strong></p>
+                <p>Accuracy: <strong>{accuracy}%</strong></p>
+                {quizResults?.timeSpent && (
+                  <p>Time Taken: <strong>{Math.round(quizResults.timeSpent / 60)} min {quizResults.timeSpent % 60} sec</strong></p>
+                )}
+              </div>
+              {error && (
+                <div style={{ color: '#EF4444', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                  {error}
+                </div>
               )}
+              <div className="result-actions">
+                <button className="home-btn" onClick={resetQuiz}>
+                  Choose Another Subject
+                </button>
+              </div>
             </div>
-            {error && (
-              <div style={{ color: '#EF4444', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                {error}
+
+            {hostedQuizId && ranking && ranking.length > 0 && (
+              <div className="hosted-quiz-ranking">
+                <h3>🏆 Hosted Quiz Rankings</h3>
+                <div className="ranking-list">
+                  {ranking.map((entry) => (
+                    <div
+                      key={entry.userId}
+                      className={`ranking-item ${entry.isCurrentUser ? 'current-user' : ''}`}
+                    >
+                      <div className="rank-position">#{entry.rank}</div>
+                      <div className="rank-user">
+                        <div className="avatar-circle">
+                          {entry.avatar
+                            ? <img src={entry.avatar} alt={entry.name} />
+                            : (entry.name ? entry.name.charAt(0).toUpperCase() : '?')}
+                        </div>
+                        <div className="rank-user-info">
+                          <div className="rank-name">
+                            {entry.name || 'Anonymous'}
+                            {entry.isCurrentUser && <span className="you-badge">You</span>}
+                          </div>
+                          <div className="rank-meta">
+                            Score: {entry.score}/{entry.totalQuestions} • {entry.accuracy}% • {Math.round((entry.timeSpent || 0) / 60)}m
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {currentUserRanking && !currentUserRanking.isCurrentUser && (
+                  <div className="your-rank-summary">
+                    Your Rank: #{currentUserRanking.rank} • {currentUserRanking.score}/{currentUserRanking.totalQuestions} ({currentUserRanking.accuracy}%)
+                  </div>
+                )}
               </div>
             )}
-            <div className="result-actions">
-              <button className="home-btn" onClick={resetQuiz}>
-                Choose Another Subject
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -736,7 +912,7 @@ const DailyQuiz = ({ user }) => {
       {/* Header */}
       <div className="quiz-page-header">
         <h1>📚 Daily Quiz</h1>
-        <p>Choose between competitive exam preparation or fun quizzes to test your knowledge</p>
+        <p>Choose between competitive exam preparation, fun quizzes, or user hosted matches to test your knowledge</p>
       </div>
 
       {/* Tab Navigation */}
@@ -753,9 +929,64 @@ const DailyQuiz = ({ user }) => {
         >
           🎉 Fun Quizzes
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'hosted' ? 'active' : ''}`}
+          onClick={() => setActiveTab('hosted')}
+        >
+          👥 Hosted Matches
+        </button>
       </div>
 
-      {/* Subjects Grid */}
+      {/* Subjects / Hosted Grid */}
+      {activeTab === 'hosted' ? (
+        <div className="hosted-quizzes-section">
+          <h2>👥 User Hosted Quiz Matches</h2>
+          {loadingHostedQuizzes ? (
+            <div className="hosted-loading">Loading hosted quizzes...</div>
+          ) : hostedQuizzes && hostedQuizzes.length > 0 ? (
+            <div className="hosted-quizzes-grid">
+              {hostedQuizzes.map((quiz) => (
+                <div key={quiz.id} className="hosted-quiz-card">
+                  <div className="hosted-quiz-header">
+                    <h3>{quiz.title}</h3>
+                    <span className="hosted-quiz-badge">Hosted</span>
+                  </div>
+                  <p className="hosted-quiz-description">{quiz.description || 'Contributor hosted quiz match'}</p>
+                  <div className="hosted-quiz-meta">
+                    <span>{quiz.questionCount} questions</span>
+                    <span>{quiz.category}{quiz.subCategory && quiz.subCategory !== 'All' ? ` • ${quiz.subCategory}` : ''}</span>
+                  </div>
+                  {quiz.host && (
+                    <div className="hosted-quiz-host">
+                      <div className="avatar-circle small">
+                        {quiz.host.avatar
+                          ? <img src={quiz.host.avatar} alt={quiz.host.name} />
+                          : (quiz.host.name ? quiz.host.name.charAt(0).toUpperCase() : '?')}
+                      </div>
+                      <span>By {quiz.host.name || 'Contributor'}</span>
+                    </div>
+                  )}
+                  <button
+                    className="start-hosted-quiz-btn"
+                    onClick={() => startHostedQuiz(quiz.id)}
+                  >
+                    Join Match
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="hosted-empty">
+              <p>No hosted matches are live right now. Try again later or practice with daily quizzes.</p>
+            </div>
+          )}
+          {hostedQuizError && (
+            <div className="hosted-error">
+              {hostedQuizError}
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="subjects-grid">
         {(activeTab === 'competitive' ? competitiveSubjects : funSubjects).map(subject => {
           const category = getCategoryFromSubject(subject.id, activeTab === 'fun')
@@ -787,6 +1018,7 @@ const DailyQuiz = ({ user }) => {
           )
         })}
       </div>
+      )}
 
       {/* Quiz Settings Modal */}
       {showSettings && selectedSubject && (

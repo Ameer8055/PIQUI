@@ -18,16 +18,18 @@ const AdminUsers = ({ user }) => {
   });
 
   useEffect(() => {
-    fetchUsers();
+    // Reset to first page when search term changes
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchUsers(1);
   }, [searchTerm]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (pageOverride) => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/admin/users`, {
         params: {
           search: searchTerm,
-          page: pagination.page,
+          page: pageOverride || pagination.page,
           limit: pagination.limit
         }
       });
@@ -89,6 +91,25 @@ const AdminUsers = ({ user }) => {
     } catch (error) {
       console.error('Error updating contributor access:', error);
       alert(error.response?.data?.message || 'Failed to update contributor access');
+    }
+  };
+
+  const toggleChatBan = async (userId, currentValue) => {
+    try {
+      const newValue = !currentValue;
+      const response = await axios.put(`${API_BASE_URL}/admin/users/${userId}/chat-ban`, {
+        isChatBanned: newValue
+      });
+
+      if (response.data.status === 'success') {
+        setUsers(prev => prev.map(u =>
+          u._id === userId ? { ...u, isChatBanned: newValue } : u
+        ));
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating chat access:', error);
+      alert(error.response?.data?.message || 'Failed to update chat access');
     }
   };
 
@@ -195,6 +216,7 @@ const AdminUsers = ({ user }) => {
                 <th>Role</th>
                 <th>Status</th>
                 <th>Contributor</th>
+                <th>Chat Access</th>
                 <th>Joined</th>
                 <th>Actions</th>
               </tr>
@@ -230,6 +252,11 @@ const AdminUsers = ({ user }) => {
                     </span>
                   </td>
                   <td>
+                    <span className={`status-badge ${user.isChatBanned ? 'inactive' : 'active'}`}>
+                      {user.isChatBanned ? '🚫 Blocked' : '✅ Allowed'}
+                    </span>
+                  </td>
+                  <td>
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td>
@@ -257,6 +284,13 @@ const AdminUsers = ({ user }) => {
                           {user.isContributor ? '❌ Revoke' : '✨ Allow'} Contribution
                         </button>
                       )}
+                      <button
+                        className={`status-btn ${user.isChatBanned ? 'activate' : 'deactivate'}`}
+                        onClick={() => toggleChatBan(user._id, user.isChatBanned)}
+                        title={user.isChatBanned ? 'Restore chat access' : 'Restrict chat access'}
+                      >
+                        {user.isChatBanned ? '✅ Allow Chat' : '🚫 Block Chat'}
+                      </button>
                     </div>
                   </td>
                 </tr>
