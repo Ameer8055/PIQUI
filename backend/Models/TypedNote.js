@@ -15,14 +15,16 @@ const typedNoteSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: [
-      'General Knowledge',
+      'India GK',
+      'Kerala GK',
       'Mathematics',
       'English',
       'Malayalam',
       'Constitution',
       'Reasoning',
       'Computer',
-      'Current Affairs'
+      'Current Affairs',
+      'Science'
     ]
   },
   createdBy: {

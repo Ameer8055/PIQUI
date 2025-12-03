@@ -104,7 +104,6 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
         // Generate quiz questions using AI
         const questions = await generateQuizFromText(
           extractedText,
-          'General Knowledge',
           parseInt(numQuestions) || 5
         );
 

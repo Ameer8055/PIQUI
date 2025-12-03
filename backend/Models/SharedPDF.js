@@ -31,7 +31,8 @@ const sharedPDFSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: [
-      'General Knowledge',
+      'India GK',
+      'Kerala GK',
       'Mathematics',
       'English',
       'Malayalam',

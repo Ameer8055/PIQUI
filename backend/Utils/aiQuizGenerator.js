@@ -57,24 +57,39 @@ ${text.substring(0, 10000)}`; // Reduced length for free tier
         const content = response.text().trim();
         
         
-        // Clean the response
-        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-        
+        // Clean the response (remove markdown fences etc.)
+        const cleanContent = content.replace(/```json\s*|```/gi, '').trim();
+
         let quizData;
         try {
             quizData = JSON.parse(cleanContent);
         } catch (parseError) {
             console.error('JSON Parse Error. Raw content:', content);
-            // If JSON parsing fails, try to extract JSON from the response
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
+
+            // Try to extract the largest JSON object from the response
+            const firstBrace = content.indexOf('{');
+            const lastBrace = content.lastIndexOf('}');
+
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                const possibleJson = content.slice(firstBrace, lastBrace + 1);
                 try {
-                    quizData = JSON.parse(jsonMatch[0]);
+                    quizData = JSON.parse(possibleJson);
                 } catch (secondError) {
-                    throw new Error('AI returned invalid JSON format. Please try again.');
+                    console.error('Second JSON parse attempt failed:', secondError);
+                    // As a fallback, try the simpler generator which is more tolerant
+                    const fallbackQuestions = await generateSimpleQuiz(text, numQuestions);
+                    if (!fallbackQuestions || !Array.isArray(fallbackQuestions) || fallbackQuestions.length === 0) {
+                        throw new Error('AI returned invalid JSON format and fallback also failed. Please try again.');
+                    }
+                    return fallbackQuestions;
                 }
             } else {
-                throw new Error('AI did not return valid JSON. Please try again.');
+                // No JSON-looking content at all, use fallback
+                const fallbackQuestions = await generateSimpleQuiz(text, numQuestions);
+                if (!fallbackQuestions || !Array.isArray(fallbackQuestions) || fallbackQuestions.length === 0) {
+                    throw new Error('AI did not return valid JSON and fallback also failed. Please try again.');
+                }
+                return fallbackQuestions;
             }
         }
 

@@ -251,10 +251,9 @@ module.exports = function registerChatSocket(io) {
             avatar: chatMessage.user.avatar || chatMessage.user.name?.charAt(0)?.toUpperCase() || 'U'
           },
           message: chatMessage.message,
-          timestamp: new Date(chatMessage.createdAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
+          // Use the same relative/pretty time formatting as history,
+          // so newly sent messages look identical to messages after refresh.
+          timestamp: formatMessageTime(chatMessage.createdAt),
           createdAt: chatMessage.createdAt,
           isImportant: chatMessage.isImportant || false,
           replyTo: chatMessage.replyTo ? {

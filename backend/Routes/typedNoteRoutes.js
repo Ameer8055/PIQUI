@@ -232,7 +232,6 @@ router.post('/:id/generate-quiz', auth, async (req, res) => {
         // Generate questions using AI
         const questions = await generateQuizFromText(
           note.content,
-          note.subject,
           parseInt(numQuestions) || 5
         );
 
